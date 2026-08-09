@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import type { ReliefData } from "@/lib/relief/types";
+import type { NavTarget, TabKey } from "@/lib/relief/nav";
 import { fmtDate } from "@/lib/relief/derive";
 import HomeView from "@/components/relief/HomeView";
 import RosterView from "@/components/relief/RosterView";
@@ -15,8 +16,7 @@ import IntakePanel from "@/components/relief/IntakePanel";
 //  - デスクトップ(lg+): 左サイドバーでタブ切替
 //  - モバイル: 上部ヘッダー＋下部タブバー
 //  - 右下の「取り込み」ボタンはどの画面からも使える
-
-type TabKey = "home" | "roster" | "schedule" | "supplies" | "field" | "logs";
+// タブ間の相互リンク（navigate → 対象タブへ切替＋該当レコードへスクロール）もここで束ねる。
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
   {
@@ -93,6 +93,13 @@ export default function ReliefApp({ initial }: { initial: ReliefData }) {
   const [data, setData] = useState<ReliefData>(initial);
   const [tab, setTab] = useState<TabKey>("home");
   const [intakeOpen, setIntakeOpen] = useState(false);
+  // タブ間ジャンプの行き先（セグメント切替・レコードのハイライトは各ビューが focus を見て行う）
+  const [focus, setFocus] = useState<NavTarget | null>(null);
+
+  const navigate = useCallback((t: NavTarget) => {
+    setFocus({ ...t, at: Date.now() });
+    setTab(t.tab);
+  }, []);
 
   // 取り込み保存後にデータを再取得して全タブへ反映する。
   const refresh = useCallback(async () => {
@@ -111,12 +118,12 @@ export default function ReliefApp({ initial }: { initial: ReliefData }) {
   }, []);
 
   const view = {
-    home: <HomeView data={data} />,
-    roster: <RosterView data={data} />,
-    schedule: <ScheduleView data={data} />,
-    supplies: <SuppliesView data={data} />,
-    field: <FieldView data={data} />,
-    logs: <LogsView data={data} onChanged={refresh} />,
+    home: <HomeView data={data} navigate={navigate} />,
+    roster: <RosterView data={data} navigate={navigate} focus={focus} />,
+    schedule: <ScheduleView data={data} navigate={navigate} focus={focus} />,
+    supplies: <SuppliesView data={data} navigate={navigate} focus={focus} />,
+    field: <FieldView data={data} navigate={navigate} focus={focus} />,
+    logs: <LogsView data={data} onChanged={refresh} navigate={navigate} focus={focus} />,
   }[tab];
 
   const title = data.disasterName || "災害対応 情報管理";

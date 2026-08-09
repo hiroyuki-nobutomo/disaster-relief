@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import type { ReactNode } from "react";
 import type { ImageIndex } from "@/lib/relief/types";
+import type { NavTarget } from "@/lib/relief/nav";
 
 // 災害対応アプリの共有 UI プリミティブ。
 // 生成りの紙色にわずかに暖かい白のカード、墨色の文字階調、藍のアクセント。
@@ -156,6 +158,45 @@ export function Field({ label, value }: { label: string; value?: ReactNode }) {
       <dd className="min-w-0 flex-1 break-words text-body">{value}</dd>
     </div>
   );
+}
+
+/** 他タブの関連情報へのジャンプリンク（避難所名・担当者名などに付ける）。 */
+export function RefLink({ onClick, children }: { onClick: () => void; children: ReactNode }) {
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      className="inline-flex items-center gap-0.5 text-accent underline-offset-2 hover:underline"
+    >
+      {children}
+      <span aria-hidden className="text-[0.8em] opacity-70">
+        ›
+      </span>
+    </button>
+  );
+}
+
+/**
+ * タブ間ジャンプの到着処理。focus が自タブ宛てなら、対象レコード
+ * （DOM id: rec-<レコードID>）へスクロールし、一時ハイライトを付ける。
+ * タブ・セグメント切替後の DOM 反映を待つため少し遅延させる。
+ */
+export function useFocusFlash(focus: NavTarget | null | undefined, ownTab: string) {
+  useEffect(() => {
+    if (!focus || focus.tab !== ownTab || !focus.focusId) return;
+    const id = focus.focusId;
+    const t = window.setTimeout(() => {
+      const el = document.getElementById(`rec-${id}`);
+      if (el) {
+        el.scrollIntoView({ block: "center", behavior: "smooth" });
+        el.classList.add("flash-focus");
+        window.setTimeout(() => el.classList.remove("flash-focus"), 2100);
+      }
+    }, 150);
+    return () => window.clearTimeout(t);
+  }, [focus, ownTab]);
 }
 
 /** 電話リンク。 */

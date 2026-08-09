@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { Booking, ReliefData, ScheduleItem } from "@/lib/relief/types";
+import type { NavTarget, Navigate } from "@/lib/relief/nav";
 import {
   bookingsForMember,
   fmtDate,
@@ -10,11 +11,21 @@ import {
   memberName,
   scheduleForMember,
 } from "@/lib/relief/derive";
-import { Card, CardHeader, Empty, Pill, Segmented, statusTone } from "@/components/relief/ui";
+import {
+  Card,
+  CardHeader,
+  Empty,
+  Pill,
+  RefLink,
+  Segmented,
+  statusTone,
+  useFocusFlash,
+} from "@/components/relief/ui";
 
 // 予定: ［スケジュール｜予約］のセグメント切替。
 // スケジュールは表示対象（全体一覧／担当者ごと）を選べ、担当者を選ぶと
 // 全体＋所属グループ＋本人の予定に、本人の予約（ホテル・移動）を重ねて表示する。
+// 予定の対象（班・担当者）や予約の担当者名から名簿へジャンプできる。
 
 const BOOKING_ICON: Record<Booking["type"], string> = {
   ホテル: "🏨",
@@ -24,10 +35,19 @@ const BOOKING_ICON: Record<Booking["type"], string> = {
   その他: "🎫",
 };
 
-function scopeBadge(data: ReliefData, e: ScheduleItem) {
+/** 予定の対象バッジ。班・個人はクリックで名簿の該当箇所へジャンプ。 */
+function scopeBadge(data: ReliefData, e: ScheduleItem, navigate: Navigate) {
   if (e.scope === "全体") return <Pill tone="blue">全体</Pill>;
-  if (e.scope === "グループ") return <Pill tone="green">{groupName(data, e.targetId)}</Pill>;
-  return <Pill tone="gray">{memberName(data, e.targetId)}</Pill>;
+  const label = e.scope === "グループ" ? groupName(data, e.targetId) : memberName(data, e.targetId);
+  return (
+    <button
+      onClick={() => navigate({ tab: "roster", focusId: e.targetId })}
+      title="名簿で見る"
+      className="cursor-pointer"
+    >
+      <Pill tone={e.scope === "グループ" ? "green" : "gray"}>{label} ›</Pill>
+    </button>
+  );
 }
 
 /** 予約を「その日の帯」としてスケジュールに重ねるための擬似予定行。 */
@@ -38,10 +58,31 @@ function bookingRows(bookings: Booking[], date: string): Booking[] {
   });
 }
 
-export default function ScheduleView({ data }: { data: ReliefData }) {
+export default function ScheduleView({
+  data,
+  navigate,
+  focus,
+}: {
+  data: ReliefData;
+  navigate: Navigate;
+  focus: NavTarget | null;
+}) {
   const [seg, setSeg] = useState<"schedule" | "bookings">("schedule");
   // ログイン中はまず「自分のスケジュール」（全体＋所属グループ＋本人＋本人の予約）を表示する。
   const [target, setTarget] = useState<string>(data.currentMemberId ?? "all");
+
+  // 他タブからのジャンプ到着時: セグメント・表示対象を合わせ、絞り込みで対象が隠れないようにする。
+  // （props 由来の派生 state 調整はレンダー中に行う。effect 内 setState は避ける）
+  const [seenFocusAt, setSeenFocusAt] = useState<number | undefined>(undefined);
+  if (focus?.tab === "schedule" && focus.at !== seenFocusAt) {
+    setSeenFocusAt(focus.at);
+    if (focus.seg === "schedule" || focus.seg === "bookings") setSeg(focus.seg);
+    else if (focus.focusId?.startsWith("B-")) setSeg("bookings");
+    else if (focus.focusId?.startsWith("SC-")) setSeg("schedule");
+    if (focus.memberId) setTarget(focus.memberId);
+    else if (focus.focusId) setTarget("all");
+  }
+  useFocusFlash(focus, "schedule");
 
   const items = useMemo(
     () => (target === "all" ? data.schedule : scheduleForMember(data, target)),
@@ -108,7 +149,7 @@ export default function ScheduleView({ data }: { data: ReliefData }) {
                 />
                 <ul className="divide-y divide-line px-4 pb-2 sm:px-5">
                   {list.map((e) => (
-                    <li key={e.id} className="flex items-baseline gap-3 py-2.5">
+                    <li key={e.id} id={`rec-${e.id}`} className="flex items-baseline gap-3 px-1 py-2.5">
                       <span className="w-24 shrink-0 text-[13px] font-semibold tabular-nums text-ink">
                         {e.start ? `${e.start}${e.end ? `–${e.end}` : ""}` : "終日"}
                       </span>
@@ -120,12 +161,12 @@ export default function ScheduleView({ data }: { data: ReliefData }) {
                           </p>
                         )}
                       </div>
-                      {scopeBadge(data, e)}
+                      {scopeBadge(data, e, navigate)}
                     </li>
                   ))}
                   {/* 本人の予約（宿泊・移動）を同じ日に重ねて表示 */}
                   {stays.map((b) => (
-                    <li key={b.id} className="flex items-baseline gap-3 py-2.5">
+                    <li key={b.id} className="flex items-baseline gap-3 px-1 py-2.5">
                       <span className="w-24 shrink-0 text-[13px] text-faint">
                         {BOOKING_ICON[b.type]} {b.type}
                       </span>
@@ -149,12 +190,12 @@ export default function ScheduleView({ data }: { data: ReliefData }) {
           ) : (
             <ul className="divide-y divide-line px-4 pb-2 sm:px-5">
               {sortedBookings.map((b) => (
-                <li key={b.id} className="py-3">
+                <li key={b.id} id={`rec-${b.id}`} className="px-1 py-3">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span className="text-[15px]">{BOOKING_ICON[b.type]}</span>
-                    <span className="text-[14px] font-semibold text-ink">
-                      {memberName(data, b.memberId)}
-                    </span>
+                    <RefLink onClick={() => navigate({ tab: "roster", focusId: b.memberId })}>
+                      <span className="text-[14px] font-semibold">{memberName(data, b.memberId)}</span>
+                    </RefLink>
                     <span className="text-[13px] tabular-nums text-mute">
                       {fmtDate(b.startDate)}
                       {b.endDate && b.endDate !== b.startDate ? ` 〜 ${fmtDate(b.endDate)}` : ""}

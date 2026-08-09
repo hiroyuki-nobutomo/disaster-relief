@@ -2,8 +2,18 @@
 
 import { useState } from "react";
 import type { LogKind, ReliefData } from "@/lib/relief/types";
+import type { NavTarget, Navigate } from "@/lib/relief/nav";
 import { fmtDate, shelterName, splitDateTime } from "@/lib/relief/derive";
-import { AttachedImages, Card, CardHeader, Chip, Empty, Pill } from "@/components/relief/ui";
+import {
+  AttachedImages,
+  Card,
+  CardHeader,
+  Chip,
+  Empty,
+  Pill,
+  RefLink,
+  useFocusFlash,
+} from "@/components/relief/ui";
 
 // 記録: ヒアリング内容の共有と、クロノロジー（時系列の出来事・指示・決定）を
 // 新しい順のタイムラインで表示。種別チップで絞り込み。
@@ -12,9 +22,28 @@ import { AttachedImages, Card, CardHeader, Chip, Empty, Pill } from "@/component
 
 const KINDS: LogKind[] = ["ヒアリング", "時系列", "指示・決定", "申し送り"];
 
-export default function LogsView({ data, onChanged }: { data: ReliefData; onChanged: () => void }) {
+export default function LogsView({
+  data,
+  onChanged,
+  navigate,
+  focus,
+}: {
+  data: ReliefData;
+  onChanged: () => void;
+  navigate: Navigate;
+  focus: NavTarget | null;
+}) {
   const [kind, setKind] = useState<"all" | LogKind>("all");
   const [sharing, setSharing] = useState<string | null>(null);
+
+  // 他タブからのジャンプ到着時: 種別絞り込みで対象が隠れないよう解除してからハイライト。
+  // （props 由来の派生 state 調整はレンダー中に行う。effect 内 setState は避ける）
+  const [seenFocusAt, setSeenFocusAt] = useState<number | undefined>(undefined);
+  if (focus?.tab === "logs" && focus.at !== seenFocusAt) {
+    setSeenFocusAt(focus.at);
+    if (focus.focusId) setKind("all");
+  }
+  useFocusFlash(focus, "logs");
   const logs = [...data.logs]
     .filter((l) => kind === "all" || l.kind === kind)
     .sort((a, b) => b.datetime.localeCompare(a.datetime));
@@ -64,7 +93,7 @@ export default function LogsView({ data, onChanged }: { data: ReliefData; onChan
           {logs.map((l, i) => {
             const { date, time } = splitDateTime(l.datetime);
             return (
-              <li key={l.id} className="relative flex gap-4">
+              <li key={l.id} id={`rec-${l.id}`} className="relative flex gap-4 px-1">
                 {/* タイムラインの縦線とドット */}
                 <div className="flex flex-col items-center">
                   <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full border-2 border-accent bg-surface" />
@@ -86,9 +115,13 @@ export default function LogsView({ data, onChanged }: { data: ReliefData; onChan
                     )}
                     {l.reporter && <span className="text-[12px] text-faint">{l.reporter}</span>}
                     {l.shelterId && (
-                      <span className="text-[12px] text-faint">
-                        @{shelterName(data, l.shelterId)}
-                      </span>
+                      <RefLink
+                        onClick={() =>
+                          navigate({ tab: "field", seg: "shelters", focusId: l.shelterId })
+                        }
+                      >
+                        <span className="text-[12px]">@{shelterName(data, l.shelterId)}</span>
+                      </RefLink>
                     )}
                     {l.visibility !== "共有" &&
                       data.currentMemberId &&

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { ReliefData } from "@/lib/relief/types";
+import type { NavTarget, Navigate } from "@/lib/relief/nav";
 import { shelterMapUrl, shelterName } from "@/lib/relief/derive";
 import {
   Card,
@@ -12,8 +13,10 @@ import {
   Mail,
   Pill,
   Segmented,
+  RefLink,
   statusTone,
   Tel,
+  useFocusFlash,
 } from "@/components/relief/ui";
 
 // 現地: ［避難所・拠点｜連絡先］のセグメント切替。
@@ -40,9 +43,29 @@ function Occupancy({ capacity, current }: { capacity?: string; current?: string 
   );
 }
 
-export default function FieldView({ data }: { data: ReliefData }) {
+export default function FieldView({
+  data,
+  navigate,
+  focus,
+}: {
+  data: ReliefData;
+  navigate: Navigate;
+  focus: NavTarget | null;
+}) {
   const [seg, setSeg] = useState<"shelters" | "contacts">("shelters");
   const [cat, setCat] = useState<string>("all");
+
+  // 他タブからのジャンプ到着時: セグメント・絞り込みを合わせてからハイライト。
+  // （props 由来の派生 state 調整はレンダー中に行う。effect 内 setState は避ける）
+  const [seenFocusAt, setSeenFocusAt] = useState<number | undefined>(undefined);
+  if (focus?.tab === "field" && focus.at !== seenFocusAt) {
+    setSeenFocusAt(focus.at);
+    if (focus.seg === "shelters" || focus.seg === "contacts") setSeg(focus.seg);
+    else if (focus.focusId?.startsWith("SH-")) setSeg("shelters");
+    else if (focus.focusId?.startsWith("C-")) setSeg("contacts");
+    if (focus.focusId?.startsWith("C-")) setCat("all");
+  }
+  useFocusFlash(focus, "field");
 
   const categories = [...new Set(data.contacts.map((c) => c.category).filter(Boolean))] as string[];
   const contacts = cat === "all" ? data.contacts : data.contacts.filter((c) => c.category === cat);
@@ -67,6 +90,7 @@ export default function FieldView({ data }: { data: ReliefData }) {
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
             {data.shelters.map((sh) => (
               <Card key={sh.id} className="px-4 py-4 sm:px-5">
+                <div id={`rec-${sh.id}`} className="px-1">
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <h3 className="text-[15px] font-semibold text-ink">{sh.name}</h3>
@@ -84,7 +108,7 @@ export default function FieldView({ data }: { data: ReliefData }) {
                   <Field label="ニーズ" value={sh.needs} />
                   <Field label="備考" value={sh.note} />
                 </dl>
-                <div className="mt-3 flex gap-2">
+                <div className="mt-3 flex flex-wrap gap-2">
                   <a
                     href={shelterMapUrl(sh)}
                     target="_blank"
@@ -93,6 +117,13 @@ export default function FieldView({ data }: { data: ReliefData }) {
                   >
                     📍 地図を開く
                   </a>
+                  <button
+                    onClick={() => navigate({ tab: "supplies", seg: "requests" })}
+                    className="inline-flex items-center gap-1 rounded-lg border border-line px-3 py-1.5 text-[12.5px] font-medium text-body transition-colors hover:border-faint hover:bg-paper"
+                  >
+                    📦 要請・物資を見る ›
+                  </button>
+                </div>
                 </div>
               </Card>
             ))}
@@ -123,7 +154,7 @@ export default function FieldView({ data }: { data: ReliefData }) {
           ) : (
             <ul className="divide-y divide-line px-4 pb-2 sm:px-5">
               {contacts.map((c) => (
-                <li key={c.id} className="py-3">
+                <li key={c.id} id={`rec-${c.id}`} className="px-1 py-3">
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                     <span className="text-[14px] font-semibold text-ink">{c.org}</span>
                     {c.category && (
@@ -133,7 +164,14 @@ export default function FieldView({ data }: { data: ReliefData }) {
                     )}
                     {c.shelterId && (
                       <span className="text-[12px] text-faint">
-                        関連: {shelterName(data, c.shelterId)}
+                        関連:{" "}
+                        <RefLink
+                          onClick={() =>
+                            navigate({ tab: "field", seg: "shelters", focusId: c.shelterId })
+                          }
+                        >
+                          {shelterName(data, c.shelterId)}
+                        </RefLink>
                       </span>
                     )}
                   </div>

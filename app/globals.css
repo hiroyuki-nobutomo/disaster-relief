@@ -53,3 +53,19 @@ body {
   letter-spacing: 0.04em;
   font-feature-settings: "palt";
 }
+
+/* タブ間ジャンプの到着ハイライト（components/relief の useFocusFlash が付与） */
+.flash-focus {
+  animation: flash-focus 2s ease-out 1;
+  border-radius: 0.75rem;
+}
+@keyframes flash-focus {
+  0% {
+    background-color: var(--color-accent-soft);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 35%, transparent);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}

@@ -5,13 +5,14 @@ import type { ReliefData } from "@/lib/relief/types";
 import { fmtDate, groupName, memberName, shelterName, splitDateTime } from "@/lib/relief/derive";
 import { Card, CardHeader, Empty, Pill } from "@/components/relief/ui";
 import type { PillTone } from "@/components/relief/ui";
+import type { NavTarget, Navigate } from "@/lib/relief/nav";
 
 // ホーム: 「今どうなっているか」「次に何を為すべきか」を端的に示す画面。
 //  1. いまの状況 — 1行のコンパクトな状況チップ
 //  2. タイムライン — 上=これからの予定 /「いま」区切り / 下=これまでの実績（新しい順）
 //  3. ネクストアクション — データから導出するアクションキュー（緊急度順）
 
-type Action = { tone: PillTone; tag: string; text: string; sub?: string };
+type Action = { tone: PillTone; tag: string; text: string; sub?: string; nav: NavTarget };
 
 /** ネクストアクションをデータから導出する（表示は最大8件・緊急度順）。 */
 function deriveActions(data: ReliefData): Action[] {
@@ -26,6 +27,7 @@ function deriveActions(data: ReliefData): Action[] {
       tag: `要請・${r.urgency}`,
       text: `「${r.content}」の手配を始める`,
       sub: [shelterName(data, r.shelterId), r.qty, `${fmtDate(r.date)}受付`].filter(Boolean).join("・"),
+      nav: { tab: "supplies", seg: "requests", focusId: r.id },
     });
   }
 
@@ -39,6 +41,7 @@ function deriveActions(data: ReliefData): Action[] {
         sub: [shelterName(data, s.toShelterId), s.arriveDate && `${fmtDate(s.arriveDate)}着予定`]
           .filter(Boolean)
           .join("・"),
+        nav: { tab: "supplies", seg: "supplies", focusId: s.id },
       });
     }
   }
@@ -54,6 +57,7 @@ function deriveActions(data: ReliefData): Action[] {
       tag: "予定",
       text: e.title,
       sub: [e.start ? `${e.start}${e.end ? `–${e.end}` : ""}` : "終日", e.place].filter(Boolean).join("・"),
+      nav: { tab: "schedule", seg: "schedule", focusId: e.id },
     });
   }
 
@@ -65,6 +69,7 @@ function deriveActions(data: ReliefData): Action[] {
         tag: "下書き",
         text: `「${l.title}」を確認して共有する`,
         sub: l.reporter,
+        nav: { tab: "logs", focusId: l.id },
       });
     }
   }
@@ -80,6 +85,7 @@ type TimelineItem = {
   tone: PillTone;
   title: string;
   sub?: string;
+  nav: NavTarget;
 };
 
 /** これからの予定（今日以降・昇順）。 */
@@ -98,6 +104,7 @@ function futureItems(data: ReliefData): TimelineItem[] {
       tone: e.scope === "全体" ? "blue" : e.scope === "グループ" ? "green" : "gray",
       title: e.title,
       sub: [e.start ? `${e.start}${e.end ? `–${e.end}` : ""}` : "終日", e.place].filter(Boolean).join("・"),
+      nav: { tab: "schedule", seg: "schedule", focusId: e.id },
     }));
 }
 
@@ -116,6 +123,7 @@ function pastItems(data: ReliefData): TimelineItem[] {
       tone: l.kind === "指示・決定" ? "red" : l.kind === "ヒアリング" ? "blue" : "gray",
       title: l.visibility === "共有" ? l.title : `${l.title}（${l.visibility}）`,
       sub: [l.reporter, l.shelterId && `@${shelterName(data, l.shelterId)}`].filter(Boolean).join("・"),
+      nav: { tab: "logs", focusId: l.id },
     });
   }
   for (const s of data.supplies) {
@@ -127,6 +135,7 @@ function pastItems(data: ReliefData): TimelineItem[] {
         tone: "amber",
         title: `${s.item} ${s.qty ?? ""}${s.unit ?? ""} を発送`,
         sub: [s.from, "→", shelterName(data, s.toShelterId)].filter(Boolean).join(" "),
+        nav: { tab: "supplies", seg: "supplies", focusId: s.id },
       });
     }
     if (s.arriveDate && (s.status === "到着" || s.status === "配布済")) {
@@ -137,6 +146,7 @@ function pastItems(data: ReliefData): TimelineItem[] {
         tone: "green",
         title: `${s.item} ${s.qty ?? ""}${s.unit ?? ""} が到着`,
         sub: shelterName(data, s.toShelterId),
+        nav: { tab: "supplies", seg: "supplies", focusId: s.id },
       });
     }
   }
@@ -148,6 +158,7 @@ function pastItems(data: ReliefData): TimelineItem[] {
       tone: r.urgency === "高" ? "red" : "amber",
       title: r.content,
       sub: [shelterName(data, r.shelterId), r.qty, `現在: ${r.status}`].filter(Boolean).join("・"),
+      nav: { tab: "supplies", seg: "requests", focusId: r.id },
     });
   }
   // 過去の予定は「実施済み」として実績側に出す
@@ -161,6 +172,7 @@ function pastItems(data: ReliefData): TimelineItem[] {
         tone: "gray",
         title: e.title,
         sub: e.place,
+        nav: { tab: "schedule", seg: "schedule", focusId: e.id },
       });
     }
   }
@@ -171,7 +183,15 @@ function pastItems(data: ReliefData): TimelineItem[] {
     .slice(0, 50);
 }
 
-function TimelineRow({ item, dim }: { item: TimelineItem; dim?: boolean }) {
+function TimelineRow({
+  item,
+  dim,
+  navigate,
+}: {
+  item: TimelineItem;
+  dim?: boolean;
+  navigate: Navigate;
+}) {
   return (
     <li className={`relative flex gap-3.5 ${dim ? "opacity-80" : ""}`}>
       <div className="flex w-[4.2rem] shrink-0 flex-col items-end pt-0.5">
@@ -184,18 +204,29 @@ function TimelineRow({ item, dim }: { item: TimelineItem; dim?: boolean }) {
         <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-line" />
         <span className="w-px flex-1 bg-line" />
       </div>
-      <div className="min-w-0 flex-1 pb-4">
+      {/* 行全体が該当タブへのジャンプボタン */}
+      <button
+        onClick={() => navigate(item.nav)}
+        title="該当タブで見る"
+        className="group -mx-1 mb-4 min-w-0 flex-1 rounded-lg px-1 pb-0 text-left transition-colors hover:bg-paper"
+      >
         <div className="flex flex-wrap items-center gap-1.5">
           <Pill tone={item.tone}>{item.tag}</Pill>
           <p className="text-[13.5px] font-medium text-body">{item.title}</p>
+          <span
+            aria-hidden
+            className="text-[12px] text-faint opacity-0 transition-opacity group-hover:opacity-100"
+          >
+            ›
+          </span>
         </div>
         {item.sub && <p className="mt-0.5 text-[12px] text-faint">{item.sub}</p>}
-      </div>
+      </button>
     </li>
   );
 }
 
-export default function HomeView({ data }: { data: ReliefData }) {
+export default function HomeView({ data, navigate }: { data: ReliefData; navigate: Navigate }) {
   const today = data.basisDate;
   const openReq = data.requests.filter((r) => r.status !== "対応済");
   const highReq = openReq.filter((r) => r.urgency === "高");
@@ -262,7 +293,7 @@ export default function HomeView({ data }: { data: ReliefData }) {
                 {/* これから（近い順に上から。今に近いものが「いま」の直上に来るよう逆順表示） */}
                 <ol>
                   {[...future].reverse().map((item) => (
-                    <TimelineRow key={item.key} item={item} />
+                    <TimelineRow key={item.key} item={item} navigate={navigate} />
                   ))}
                 </ol>
                 {/* いま（初期スクロール位置の基準） */}
@@ -276,7 +307,7 @@ export default function HomeView({ data }: { data: ReliefData }) {
                 {/* これまで（新しい順） */}
                 <ol className="pt-3">
                   {past.map((item) => (
-                    <TimelineRow key={item.key} item={item} dim />
+                    <TimelineRow key={item.key} item={item} dim navigate={navigate} />
                   ))}
                 </ol>
               </div>
@@ -296,15 +327,29 @@ export default function HomeView({ data }: { data: ReliefData }) {
         ) : (
           <ol className="divide-y divide-line px-4 pb-2 sm:px-5">
             {actions.map((a, i) => (
-              <li key={i} className="flex items-start gap-2.5 py-2.5">
-                <span className="mt-0.5 w-5 shrink-0 text-center text-[11.5px] font-bold text-faint">
-                  {i + 1}
-                </span>
-                <Pill tone={a.tone}>{a.tag}</Pill>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[13.5px] font-medium text-body">{a.text}</p>
-                  {a.sub && <p className="mt-0.5 text-[12px] text-faint">{a.sub}</p>}
-                </div>
+              <li key={i}>
+                <button
+                  onClick={() => navigate(a.nav)}
+                  title="該当タブで見る"
+                  className="group -mx-1 flex w-full items-start gap-2.5 rounded-lg px-1 py-2.5 text-left transition-colors hover:bg-paper"
+                >
+                  <span className="mt-0.5 w-5 shrink-0 text-center text-[11.5px] font-bold text-faint">
+                    {i + 1}
+                  </span>
+                  <Pill tone={a.tone}>{a.tag}</Pill>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13.5px] font-medium text-body">
+                      {a.text}
+                      <span
+                        aria-hidden
+                        className="ml-1 text-[12px] text-faint opacity-0 transition-opacity group-hover:opacity-100"
+                      >
+                        ›
+                      </span>
+                    </p>
+                    {a.sub && <p className="mt-0.5 text-[12px] text-faint">{a.sub}</p>}
+                  </div>
+                </button>
               </li>
             ))}
           </ol>

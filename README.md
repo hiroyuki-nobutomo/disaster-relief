@@ -1,8 +1,14 @@
-# disaster-relief — プロジェクト・マネジメント ダッシュボード
+# disaster-relief — 災害対応 情報管理ダッシュボード
 
-プロジェクトの進捗を可視化する Web ダッシュボード（汎用テンプレート）。
-**活動報告メールの5W1H分析レポート蓄積**と**項目別予実管理**を備える。
-UI 層 = **Vercel (Next.js / App Router)** ／ データ層 = **Google Sheets（閲覧専用）** ／ コード = **GitHub**。
+災害対応の情報管理を実施する Web アプリケーション。
+進捗可視化・**活動報告メールの5W1H分析レポート蓄積**・**項目別予実管理**の基盤を備える。
+
+## 原則（アーキテクチャの基本方針）
+
+- **UI 層 = Vercel（Next.js / App Router）**
+- **AI = Claude**（分析・エージェント機能はすべて Claude を使用）
+- **データ層 = Google Sheets**（災害対応データの正本）
+- コード = **GitHub**（`hiroyuki-nobutomo/disaster-relief`）
 
 > v1 スコープ：**閲覧専用・予算項目なし・自然言語(Claude)パネルなし**。書き戻しと NL パネルは v2（[HANDOFF](docs/HANDOFF.md) §11）。
 >

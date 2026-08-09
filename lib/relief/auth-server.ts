@@ -6,6 +6,7 @@ import {
   timingSafeEqual,
   verifySession,
 } from "@/lib/relief/auth";
+import { SHEETS, dataRange, rowToRecord } from "@/lib/relief/schema";
 import { activeSheetId, hasSheetsCreds, sheetsClient } from "@/lib/google-sheets";
 
 // 担当者認証のサーバ専用部分（next/headers・Sheets 照合に依存するため middleware からは使わない）。
@@ -23,16 +24,14 @@ async function readMemberAuthRow(
     const sheets = sheetsClient("read");
     const r = await sheets.spreadsheets.values.get({
       spreadsheetId: sid,
-      range: "members!A2:J",
+      // 認証はサーバ専用なので clientHidden の password 列まで含めて読む。
+      range: dataRange(SHEETS.members, { includeHidden: true }),
     });
-    const row = (r.data.values ?? []).find(
-      (x) =>
-        String(x?.[0] ?? "")
-          .trim()
-          .toLowerCase() === memberId.trim().toLowerCase(),
-    );
+    const row = ((r.data.values ?? []) as unknown[][])
+      .map((x) => rowToRecord(SHEETS.members, x))
+      .find((x) => x.id.toLowerCase() === memberId.trim().toLowerCase());
     if (!row) return null;
-    return { name: String(row[1] ?? "").trim(), password: String(row[9] ?? "").trim() };
+    return { name: row.name, password: row.password };
   } catch {
     return null;
   }

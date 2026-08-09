@@ -14,7 +14,8 @@
 ## 構成（docs/DESIGN.md が正）
 
 - シートは11タブ（meta/members/groups/schedule/bookings/supplies/requests/shelters/contacts/logs/images）を
-  ID で相互参照。列構成・許可値を変えるときは docs/DESIGN.md・docs/seed/・読み書き層を必ず同時に更新する
+  ID で相互参照。**列定義の正は `lib/relief/schema.ts`（単一情報源）**。列を変えるときは
+  schema.ts と docs/seed/*.csv・docs/DESIGN.md を更新し、`npm run check:schema` で一致を確認する
 - 層の分離: `lib/relief/*`（型・読み書き・検証・認証＝業務ロジック）→ `app/api/relief/*` →
   `components/relief/*`（表示のみ）。**業務判断を画面側に書かない**
 - 書き込みは「行の追記」のみ（logs の公開範囲変更を除く）。ID はサーバで自動採番

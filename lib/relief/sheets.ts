@@ -13,24 +13,29 @@ import type {
 } from "@/lib/relief/types";
 import { RELIEF_SEED } from "@/lib/relief/seed";
 import { todayKeyJST } from "@/lib/relief/derive";
+import { SHEETS, colLetter, colIndex, dataRange, rowToRecord } from "@/lib/relief/schema";
 import { activeSheetId, hasSheetsCreds, sheetsClient } from "@/lib/google-sheets";
 
-// 災害対応データの読み取り層。Google Sheets の各タブ（docs/DESIGN.md の列定義）を
-// ReliefData に組み立てる。未接続時は SEED を返してローカルでも UI を確認できる。
+// 災害対応データの読み取り層。Google Sheets の各タブを ReliefData に組み立てる。
+// 列の並び・取得レンジは lib/relief/schema.ts（単一情報源）から導出し、
+// ここでは「文字列レコード → 型付きオブジェクト」への正規化だけを行う。
+// 未接続時は SEED を返してローカルでも UI を確認できる。
 
-function s(v: unknown): string {
-  return String(v ?? "").trim();
-}
-
-function opt(v: unknown): string | undefined {
-  const t = s(v);
+function opt(t: string): string | undefined {
   return t === "" ? undefined : t;
 }
 
 /** 許可値のいずれかに一致すればそれを、しなければ既定値を返す（表記ゆれをUIで壊さない）。 */
-function oneOf<T extends string>(v: unknown, allowed: readonly T[], fallback: T): T {
-  const t = s(v) as T;
-  return allowed.includes(t) ? t : fallback;
+function oneOf<T extends string>(t: string, allowed: readonly T[], fallback: T): T {
+  return allowed.includes(t as T) ? (t as T) : fallback;
+}
+
+/** 取得結果の行群を schema でキー付きレコードに変換（id 空行は除外）。 */
+function toRecords(
+  def: (typeof SHEETS)[keyof typeof SHEETS],
+  rows: unknown[][],
+): Record<string, string>[] {
+  return rows.map((row) => rowToRecord(def, row)).filter((r) => r[def.columns[0].key] !== "");
 }
 
 /** 閲覧者（ログイン中の担当者）。logs の公開範囲フィルタと個人出し分けに使う。 */
@@ -42,204 +47,202 @@ export async function getReliefData(viewer: Viewer = null): Promise<ReliefData> 
     return { ...RELIEF_SEED, basisDate: todayKeyJST() };
   }
 
+  // 取得順は固定（下の分割代入と対応）。clientHidden 列（members.password）はレンジ外。
+  const defs = [
+    SHEETS.meta,
+    SHEETS.members,
+    SHEETS.groups,
+    SHEETS.schedule,
+    SHEETS.bookings,
+    SHEETS.supplies,
+    SHEETS.requests,
+    SHEETS.shelters,
+    SHEETS.contacts,
+    SHEETS.logs,
+  ];
   const sheets = sheetsClient("read");
   const { data } = await sheets.spreadsheets.values.batchGet({
     spreadsheetId,
-    ranges: [
-      "meta!A2:B",
-      "members!A2:I",
-      "groups!A2:E",
-      "schedule!A2:I",
-      "bookings!A2:J",
-      "supplies!A2:M",
-      "requests!A2:H",
-      "shelters!A2:L",
-      "contacts!A2:I",
-      "logs!A2:L",
-    ],
+    ranges: defs.map((d) => dataRange(d)),
   });
+  const [
+    metaRows,
+    memberRows,
+    groupRows,
+    schedRows,
+    bookRows,
+    supplyRows,
+    reqRows,
+    shelterRows,
+    contactRows,
+    logRows,
+  ] = defs.map((d, i) => toRecords(d, (data.valueRanges?.[i]?.values ?? []) as unknown[][]));
 
-  const [metaR, memberR, groupR, schedR, bookR, supplyR, reqR, shelterR, contactR, logR] =
-    data.valueRanges ?? [];
-
-  // 添付画像の索引（images タブ・任意）。本体（E列 data）は読まない。
+  // 添付画像の索引（images タブ・任意）。本体（data 列）は読まない。
   // タブ未作成でも本体が壊れないよう別取得＋try/catch。
-  let imageRows: string[][] = [];
+  let imageRows: Record<string, string>[] = [];
   try {
     const ir = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: "images!A2:D",
+      // id〜seq のみ（data 列の手前まで）
+      range: `images!A2:${colLetter(colIndex(SHEETS.images, "seq"))}`,
     });
-    imageRows = ((ir.data.values ?? []) as unknown[][]).map((row) =>
-      (row ?? []).map((c) => String(c ?? "")),
-    );
+    imageRows = toRecords(SHEETS.images, (ir.data.values ?? []) as unknown[][]);
   } catch {
     imageRows = [];
   }
 
-  const rows = (r: (typeof metaR | undefined) | { values?: unknown[][] }): string[][] =>
-    ((r?.values ?? []) as unknown[][]).map((row) => (row ?? []).map((c) => String(c ?? "")));
-
   const meta = new Map<string, string>();
-  rows(metaR).forEach((r) => {
-    if (s(r[0])) meta.set(s(r[0]), s(r[1]));
-  });
+  metaRows.forEach((r) => meta.set(r.key, r.value));
 
-  const members: Member[] = rows(memberR)
-    .filter((r) => s(r[0]) !== "")
+  const members: Member[] = memberRows
     .map((r) => ({
-      id: s(r[0]),
-      name: s(r[1]),
-      kana: opt(r[2]),
-      org: opt(r[3]),
-      role: opt(r[4]),
-      groupId: opt(r[5]),
-      phone: opt(r[6]),
-      email: opt(r[7]),
-      note: opt(r[8]),
+      id: r.id,
+      name: r.name,
+      kana: opt(r.kana),
+      org: opt(r.org),
+      role: opt(r.role),
+      groupId: opt(r.groupId),
+      phone: opt(r.phone),
+      email: opt(r.email),
+      note: opt(r.note),
     }))
     .filter((m) => m.name !== "");
 
-  const groups: Group[] = rows(groupR)
-    .filter((r) => s(r[0]) !== "")
+  const groups: Group[] = groupRows
     .map((r) => ({
-      id: s(r[0]),
-      name: s(r[1]),
-      mission: opt(r[2]),
-      leaderId: opt(r[3]),
-      note: opt(r[4]),
+      id: r.id,
+      name: r.name,
+      mission: opt(r.mission),
+      leaderId: opt(r.leaderId),
+      note: opt(r.note),
     }))
     .filter((g) => g.name !== "");
 
-  const schedule: ScheduleItem[] = rows(schedR)
-    .filter((r) => s(r[0]) !== "")
+  const schedule: ScheduleItem[] = schedRows
     .map((r) => ({
-      id: s(r[0]),
-      date: s(r[1]),
-      start: opt(r[2]),
-      end: opt(r[3]),
-      scope: oneOf(r[4], ["全体", "グループ", "個人"] as const, "全体"),
-      targetId: opt(r[5]),
-      title: s(r[6]),
-      place: opt(r[7]),
-      note: opt(r[8]),
+      id: r.id,
+      date: r.date,
+      start: opt(r.start),
+      end: opt(r.end),
+      scope: oneOf(r.scope, ["全体", "グループ", "個人"] as const, "全体"),
+      targetId: opt(r.targetId),
+      title: r.title,
+      place: opt(r.place),
+      note: opt(r.note),
     }))
     .filter((e) => e.date !== "" && e.title !== "");
 
-  const bookings: Booking[] = rows(bookR)
-    .filter((r) => s(r[0]) !== "")
+  const bookings: Booking[] = bookRows
     .map((r) => ({
-      id: s(r[0]),
-      memberId: s(r[1]),
-      type: oneOf(r[2], ["ホテル", "飛行機", "新幹線", "レンタカー", "その他"] as const, "その他"),
-      startDate: s(r[3]),
-      endDate: opt(r[4]),
-      name: s(r[5]),
-      detail: opt(r[6]),
-      confNo: opt(r[7]),
-      status: oneOf(r[8], ["予約済", "仮予約", "キャンセル"] as const, "仮予約"),
-      note: opt(r[9]),
+      id: r.id,
+      memberId: r.memberId,
+      type: oneOf(
+        r.type,
+        ["ホテル", "飛行機", "新幹線", "レンタカー", "その他"] as const,
+        "その他",
+      ),
+      startDate: r.startDate,
+      endDate: opt(r.endDate),
+      name: r.name,
+      detail: opt(r.detail),
+      confNo: opt(r.confNo),
+      status: oneOf(r.status, ["予約済", "仮予約", "キャンセル"] as const, "仮予約"),
+      note: opt(r.note),
     }))
     .filter((b) => b.startDate !== "" && b.name !== "");
 
-  const supplies: Supply[] = rows(supplyR)
-    .filter((r) => s(r[0]) !== "")
+  const supplies: Supply[] = supplyRows
     .map((r) => ({
-      id: s(r[0]),
-      lotNo: opt(r[1]),
-      item: s(r[2]),
-      category: opt(r[3]),
-      qty: opt(r[4]),
-      unit: opt(r[5]),
-      from: opt(r[6]),
-      toShelterId: opt(r[7]),
-      status: oneOf(r[8], ["手配中", "輸送中", "到着", "配布済"] as const, "手配中"),
-      shipDate: opt(r[9]),
-      arriveDate: opt(r[10]),
-      requestId: opt(r[11]),
-      note: opt(r[12]),
+      id: r.id,
+      lotNo: opt(r.lotNo),
+      item: r.item,
+      category: opt(r.category),
+      qty: opt(r.qty),
+      unit: opt(r.unit),
+      from: opt(r.from),
+      toShelterId: opt(r.toShelterId),
+      status: oneOf(r.status, ["手配中", "輸送中", "到着", "配布済"] as const, "手配中"),
+      shipDate: opt(r.shipDate),
+      arriveDate: opt(r.arriveDate),
+      requestId: opt(r.requestId),
+      note: opt(r.note),
     }))
     .filter((x) => x.item !== "");
 
-  const requests: SupportRequest[] = rows(reqR)
-    .filter((r) => s(r[0]) !== "")
+  const requests: SupportRequest[] = reqRows
     .map((r) => ({
-      id: s(r[0]),
-      date: s(r[1]),
-      shelterId: opt(r[2]),
-      content: s(r[3]),
-      qty: opt(r[4]),
-      urgency: oneOf(r[5], ["高", "中", "低"] as const, "中"),
-      status: oneOf(r[6], ["受付", "手配中", "対応済"] as const, "受付"),
-      note: opt(r[7]),
+      id: r.id,
+      date: r.date,
+      shelterId: opt(r.shelterId),
+      content: r.content,
+      qty: opt(r.qty),
+      urgency: oneOf(r.urgency, ["高", "中", "低"] as const, "中"),
+      status: oneOf(r.status, ["受付", "手配中", "対応済"] as const, "受付"),
+      note: opt(r.note),
     }))
     .filter((x) => x.content !== "");
 
-  const shelters: Shelter[] = rows(shelterR)
-    .filter((r) => s(r[0]) !== "")
+  const shelters: Shelter[] = shelterRows
     .map((r) => ({
-      id: s(r[0]),
-      name: s(r[1]),
-      type: opt(r[2]),
-      address: opt(r[3]),
-      mapUrl: opt(r[4]),
-      contactName: opt(r[5]),
-      phone: opt(r[6]),
-      capacity: opt(r[7]),
-      current: opt(r[8]),
-      needs: opt(r[9]),
-      status: oneOf(r[10], ["開設", "閉鎖"] as const, "開設"),
-      note: opt(r[11]),
+      id: r.id,
+      name: r.name,
+      type: opt(r.type),
+      address: opt(r.address),
+      mapUrl: opt(r.mapUrl),
+      contactName: opt(r.contactName),
+      phone: opt(r.phone),
+      capacity: opt(r.capacity),
+      current: opt(r.current),
+      needs: opt(r.needs),
+      status: oneOf(r.status, ["開設", "閉鎖"] as const, "開設"),
+      note: opt(r.note),
     }))
     .filter((x) => x.name !== "");
 
-  const contacts: Contact[] = rows(contactR)
-    .filter((r) => s(r[0]) !== "")
+  const contacts: Contact[] = contactRows
     .map((r) => ({
-      id: s(r[0]),
-      org: s(r[1]),
-      name: opt(r[2]),
-      role: opt(r[3]),
-      category: opt(r[4]),
-      phone: opt(r[5]),
-      email: opt(r[6]),
-      shelterId: opt(r[7]),
-      note: opt(r[8]),
+      id: r.id,
+      org: r.org,
+      name: opt(r.name),
+      role: opt(r.role),
+      category: opt(r.category),
+      phone: opt(r.phone),
+      email: opt(r.email),
+      shelterId: opt(r.shelterId),
+      note: opt(r.note),
     }))
     .filter((x) => x.org !== "");
 
-  // A:L = id, datetime, kind, reporter, shelter_id, title, content, tags, source,
-  //       visibility, author_id, created_at
   // 「共有」以外（下書き・プライベート）は作成者本人にだけ返す（サーバ側で除外）。
-  const logs: LogEntry[] = rows(logR)
-    .filter((r) => s(r[0]) !== "")
+  const logs: LogEntry[] = logRows
     .map((r) => ({
-      id: s(r[0]),
-      datetime: s(r[1]),
-      kind: oneOf(r[2], ["ヒアリング", "時系列", "指示・決定", "申し送り"] as const, "時系列"),
-      reporter: opt(r[3]),
-      shelterId: opt(r[4]),
-      title: s(r[5]),
-      content: opt(r[6]),
-      tags: opt(r[7]),
-      source: opt(r[8]),
-      visibility: oneOf(r[9], ["共有", "下書き", "プライベート"] as const, "共有"),
-      authorId: opt(r[10]),
-      createdAt: opt(r[11]),
+      id: r.id,
+      datetime: r.datetime,
+      kind: oneOf(r.kind, ["ヒアリング", "時系列", "指示・決定", "申し送り"] as const, "時系列"),
+      reporter: opt(r.reporter),
+      shelterId: opt(r.shelterId),
+      title: r.title,
+      content: opt(r.content),
+      tags: opt(r.tags),
+      source: opt(r.source),
+      visibility: oneOf(r.visibility, ["共有", "下書き", "プライベート"] as const, "共有"),
+      authorId: opt(r.authorId),
+      createdAt: opt(r.createdAt),
     }))
     .filter((x) => x.datetime !== "" && x.title !== "")
     .filter((x) => x.visibility === "共有" || (viewer !== null && x.authorId === viewer.id));
 
-  // A:D = id, ref_ids(カンマ区切り), mime, seq。チャンク行(seq>1)は索引に含めない。
+  // チャンク行（seq>1）は索引に含めない。
   const images: ImageIndex[] = imageRows
-    .filter((r) => s(r[0]) !== "" && (s(r[3]) === "" || s(r[3]) === "1"))
+    .filter((r) => r.seq === "" || r.seq === "1")
     .map((r) => ({
-      id: s(r[0]),
-      refIds: s(r[1])
+      id: r.id,
+      refIds: r.refIds
         .split(",")
         .map((x) => x.trim())
         .filter(Boolean),
-      mime: s(r[2]) || "image/jpeg",
+      mime: r.mime || "image/jpeg",
     }));
 
   return {
@@ -272,16 +275,17 @@ export async function getReliefImage(
     const sheets = sheetsClient("read");
     const r = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: "images!A2:E",
+      // id〜data（created_at は不要）
+      range: `images!A2:${colLetter(colIndex(SHEETS.images, "data"))}`,
     });
     const rows = ((r.data.values ?? []) as unknown[][])
-      .map((row) => (row ?? []).map((c) => String(c ?? "")))
-      .filter((row) => row[0]?.trim() === imageId.trim());
+      .map((row) => rowToRecord(SHEETS.images, row))
+      .filter((row) => row.id === imageId.trim());
     if (!rows.length) return null;
-    rows.sort((a, b) => Number(a[3] || 1) - Number(b[3] || 1));
+    rows.sort((a, b) => Number(a.seq || 1) - Number(b.seq || 1));
     return {
-      mime: rows[0][2]?.trim() || "image/jpeg",
-      base64: rows.map((row) => row[4] ?? "").join(""),
+      mime: rows[0].mime || "image/jpeg",
+      base64: rows.map((row) => row.data).join(""),
     };
   } catch {
     return null;

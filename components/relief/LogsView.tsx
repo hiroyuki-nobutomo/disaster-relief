@@ -12,6 +12,7 @@ import {
   Empty,
   Pill,
   RefLink,
+  kindTone,
   useFocusFlash,
 } from "@/components/relief/ui";
 
@@ -105,13 +106,7 @@ export default function LogsView({
                       {fmtDate(date)}
                       {time ? ` ${time}` : ""}
                     </span>
-                    <Pill
-                      tone={
-                        l.kind === "指示・決定" ? "red" : l.kind === "ヒアリング" ? "blue" : "gray"
-                      }
-                    >
-                      {l.kind}
-                    </Pill>
+                    <Pill tone={kindTone(l.kind)}>{l.kind}</Pill>
                     {l.visibility !== "共有" && (
                       <Pill tone="amber">
                         {l.visibility === "下書き" ? "下書き（自分のみ）" : "プライベート"}
@@ -133,7 +128,7 @@ export default function LogsView({
                         <button
                           onClick={() => share(l.id)}
                           disabled={sharing === l.id}
-                          className="rounded-full border border-accent/30 bg-accent-soft px-2.5 py-0.5 text-[11.5px] font-semibold text-accent transition-colors hover:bg-accent-soft disabled:opacity-50"
+                          className="rounded-full border border-accent/30 bg-accent-soft px-2.5 py-0.5 text-[11.5px] font-semibold text-accent transition-colors hover:border-accent/60 hover:bg-accent/15 disabled:opacity-50"
                         >
                           {sharing === l.id ? "共有中…" : "全体に共有する"}
                         </button>
@@ -141,7 +136,7 @@ export default function LogsView({
                   </div>
                   <p className="mt-1 text-[14px] font-medium text-ink">{l.title}</p>
                   {l.content && (
-                    <p className="mt-1 text-[13px] leading-relaxed whitespace-pre-wrap text-body">
+                    <p className="mt-1 text-[13px] leading-relaxed break-words whitespace-pre-wrap text-body">
                       {l.content}
                     </p>
                   )}

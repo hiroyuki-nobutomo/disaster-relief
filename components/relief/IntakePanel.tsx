@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pill } from "@/components/relief/ui";
 
 // 貼り付け取り込みパネル。
@@ -114,6 +114,7 @@ const TABLE_META: Record<string, { label: string; fields: [string, string][] }> 
       ["name", "名称"],
       ["type", "種別"],
       ["address", "住所"],
+      ["mapUrl", "地図URL"],
       ["contactName", "窓口"],
       ["phone", "電話"],
       ["capacity", "収容"],
@@ -173,6 +174,16 @@ export default function IntakePanel({
   const [error, setError] = useState<string | undefined>();
   const [savedMsg, setSavedMsg] = useState<string>("");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Esc で閉じる（解析・保存中は誤操作防止のため無効）。
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && phase !== "analyzing" && phase !== "saving") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, phase, onClose]);
 
   if (!open) return null;
 
@@ -274,7 +285,12 @@ export default function IntakePanel({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 backdrop-blur-[2px] sm:items-center sm:p-6">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="貼り付け取り込み"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 backdrop-blur-[2px] sm:items-center sm:p-6"
+    >
       <div className="flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-surface shadow-2xl sm:max-h-[85dvh] sm:max-w-3xl sm:rounded-2xl">
         {/* ヘッダー */}
         <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
@@ -333,7 +349,6 @@ export default function IntakePanel({
                   ref={fileRef}
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
-                  capture="environment"
                   multiple
                   hidden
                   onChange={(e) => addPhotos(e.target.files)}

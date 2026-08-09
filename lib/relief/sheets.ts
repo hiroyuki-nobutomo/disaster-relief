@@ -12,6 +12,7 @@ import type {
   SupportRequest,
 } from "@/lib/relief/types";
 import { RELIEF_SEED } from "@/lib/relief/seed";
+import { todayKeyJST } from "@/lib/relief/derive";
 import { activeSheetId, hasSheetsCreds, sheetsClient } from "@/lib/google-sheets";
 
 // 災害対応データの読み取り層。Google Sheets の各タブ（docs/DESIGN.md の列定義）を
@@ -30,15 +31,6 @@ function opt(v: unknown): string | undefined {
 function oneOf<T extends string>(v: unknown, allowed: readonly T[], fallback: T): T {
   const t = s(v) as T;
   return allowed.includes(t) ? t : fallback;
-}
-
-function todayKeyJST(): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Tokyo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
 }
 
 /** 閲覧者（ログイン中の担当者）。logs の公開範囲フィルタと個人出し分けに使う。 */

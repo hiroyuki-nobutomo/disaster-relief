@@ -36,7 +36,14 @@ function Occupancy({ capacity, current }: { capacity?: string; current?: string 
           {cur} / {cap} 名
         </span>
       </div>
-      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-wash">
+      <div
+        role="progressbar"
+        aria-label="収容状況"
+        aria-valuemin={0}
+        aria-valuemax={cap}
+        aria-valuenow={cur}
+        className="mt-1 h-1.5 overflow-hidden rounded-full bg-wash"
+      >
         <div className={`h-full rounded-full ${tone}`} style={{ width: `${ratio * 100}%` }} />
       </div>
     </div>

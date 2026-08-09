@@ -33,5 +33,5 @@ export async function proxy(req: NextRequest) {
 
 export const config = {
   // 静的アセット・画像最適化・favicon を除く全リクエストに適用。
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg).*)"],
 };

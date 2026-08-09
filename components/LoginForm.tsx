@@ -7,7 +7,12 @@ import { useState } from "react";
 export default function LoginForm() {
   const router = useRouter();
   const search = useSearchParams();
-  const next = search.get("next") || "/";
+  // オープンリダイレクト対策: 同一サイト内の絶対パスのみ許可（"//evil.com" 等を弾く）。
+  const rawNext = search.get("next") || "/";
+  const next =
+    rawNext.startsWith("/") && !rawNext.startsWith("//") && !rawNext.startsWith("/\\")
+      ? rawNext
+      : "/";
 
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +32,7 @@ export default function LoginForm() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data?.ok) {
-        router.replace(next.startsWith("/") ? next : "/");
+        router.replace(next);
         router.refresh();
       } else {
         setError(data?.error || "ログインに失敗しました。");

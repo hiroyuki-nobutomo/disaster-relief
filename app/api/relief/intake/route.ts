@@ -8,6 +8,8 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { getReliefData } from "@/lib/relief/sheets";
+import { todayKeyJST } from "@/lib/relief/derive";
+import { authEnabled } from "@/lib/relief/auth";
 import { currentMember } from "@/lib/relief/auth-server";
 import {
   appendReliefImages,
@@ -214,15 +216,6 @@ const extractTool: Anthropic.Tool = {
   },
 };
 
-function todayKeyJST(): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Tokyo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-}
-
 /** 既存データの ID 対応表（Claude が FK を安全に割り当てるための文脈）。 */
 async function referenceContext(): Promise<string> {
   try {
@@ -393,6 +386,9 @@ async function save(entries: unknown, imagesRaw: unknown): Promise<Response> {
         if (key === "logs") {
           out.authorId = member?.id ?? "";
           if (!out.reporter && member) out.reporter = member.name;
+          // 作成者を特定できない（認証無効の）環境で下書き/プライベートを許すと、
+          // 誰にも見えない記録になってしまうため「共有」に強制する。
+          if (!member && out.visibility && out.visibility !== "共有") out.visibility = "共有";
         }
         return out;
       });
@@ -424,6 +420,10 @@ async function save(entries: unknown, imagesRaw: unknown): Promise<Response> {
 }
 
 export async function POST(req: Request) {
+  // 認可は middleware（proxy.ts）が入口で行うが、多層防御としてここでも確認する。
+  if (authEnabled() && !(await currentMember())) {
+    return Response.json({ error: "ログインが必要です。" }, { status: 401 });
+  }
   const body = await req.json().catch(() => ({}));
   const action = String(body?.action ?? "");
   if (action === "analyze") return analyze(String(body?.text ?? ""), body?.images);

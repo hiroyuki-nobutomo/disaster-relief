@@ -69,3 +69,9 @@ body {
     box-shadow: none;
   }
 }
+
+/* キーボード操作時のフォーカス可視化（マウス時は出さない） */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 55%, transparent);
+  outline-offset: 2px;
+}

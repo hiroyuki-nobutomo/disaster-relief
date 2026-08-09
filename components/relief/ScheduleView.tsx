@@ -18,6 +18,7 @@ import {
   Pill,
   RefLink,
   Segmented,
+  scopeTone,
   statusTone,
   useFocusFlash,
 } from "@/components/relief/ui";
@@ -45,7 +46,7 @@ function scopeBadge(data: ReliefData, e: ScheduleItem, navigate: Navigate) {
       title="名簿で見る"
       className="cursor-pointer"
     >
-      <Pill tone={e.scope === "グループ" ? "green" : "gray"}>{label} ›</Pill>
+      <Pill tone={scopeTone(e.scope)}>{label} ›</Pill>
     </button>
   );
 }

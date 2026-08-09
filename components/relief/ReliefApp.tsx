@@ -142,6 +142,7 @@ export default function ReliefApp({ initial }: { initial: ReliefData }) {
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
+              aria-current={tab === t.key ? "page" : undefined}
               className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-colors ${
                 tab === t.key
                   ? "bg-accent-soft text-accent"
@@ -194,9 +195,10 @@ export default function ReliefApp({ initial }: { initial: ReliefData }) {
             {data.currentMemberId && (
               <button
                 onClick={logout}
+                aria-label="ログアウト"
                 className="rounded-full bg-wash px-2.5 py-1 text-[11px] font-medium text-body"
               >
-                {data.currentMemberName || data.currentMemberId} ▾
+                {data.currentMemberName || data.currentMemberId}・ログアウト
               </button>
             )}
           </div>
@@ -246,6 +248,7 @@ export default function ReliefApp({ initial }: { initial: ReliefData }) {
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
+              aria-current={tab === t.key ? "page" : undefined}
               className={`flex flex-col items-center gap-0.5 py-2 text-[10.5px] font-medium transition-colors ${
                 tab === t.key ? "text-accent" : "text-faint"
               }`}

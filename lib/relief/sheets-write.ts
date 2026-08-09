@@ -19,7 +19,7 @@ function isValidDate(v: string): boolean {
 }
 
 function safeText(s: string): string {
-  return /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
+  return /^[=+\-@\t\r\n]/.test(s) ? `'${s}` : s;
 }
 
 function nowJST(): string {

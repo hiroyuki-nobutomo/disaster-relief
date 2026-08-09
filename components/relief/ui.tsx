@@ -65,6 +65,16 @@ export function Pill({ tone, children }: { tone: PillTone; children: ReactNode }
   );
 }
 
+/** 記録の種別→色（複数画面で使うためここに一元化）。 */
+export function kindTone(kind: string): PillTone {
+  return kind === "指示・決定" ? "red" : kind === "ヒアリング" ? "blue" : "gray";
+}
+
+/** 予定の対象区分→色（複数画面で使うためここに一元化）。 */
+export function scopeTone(scope: string): PillTone {
+  return scope === "全体" ? "blue" : scope === "グループ" ? "green" : "gray";
+}
+
 /** ステータス→色の対応（データ層の語彙をここで一元的に色へ写す）。 */
 export function statusTone(status: string): PillTone {
   switch (status) {
@@ -135,6 +145,7 @@ export function Chip({
   return (
     <button
       onClick={onClick}
+      aria-pressed={active}
       className={`rounded-full border px-3 py-1 text-[12.5px] font-medium transition-colors ${
         active
           ? "border-accent bg-accent text-white"

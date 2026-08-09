@@ -4,6 +4,16 @@ import type { Booking, ReliefData, ScheduleItem, Shelter } from "@/lib/relief/ty
 
 const WEEK = ["日", "月", "火", "水", "木", "金", "土"] as const;
 
+/** 今日（JST・YYYY-MM-DD）。Vercel は UTC 実行のためタイムゾーンを明示する。 */
+export function todayKeyJST(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
 /** "2026-08-18" → "8/18（火）"。不正な日付はそのまま返す。 */
 export function fmtDate(ymd: string): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd);
@@ -58,7 +68,7 @@ export function bookingsForMember(data: ReliefData, memberId: string): Booking[]
 }
 
 /** 日付昇順（同日中は開始時刻順・時刻なしは先頭）。 */
-export function sortSchedule(items: ScheduleItem[]): ScheduleItem[] {
+function sortSchedule(items: ScheduleItem[]): ScheduleItem[] {
   return [...items].sort((a, b) =>
     a.date === b.date ? (a.start ?? "").localeCompare(b.start ?? "") : a.date.localeCompare(b.date),
   );

@@ -24,7 +24,7 @@ const SCOPES = {
 } as const;
 
 /** 指定スコープで認証オブジェクトを返す。 */
-export function googleAuth(scopes: string[]) {
+function googleAuth(scopes: string[]) {
   return new google.auth.GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,

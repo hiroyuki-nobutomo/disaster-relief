@@ -6,7 +6,7 @@
 ## 1. 全体像
 
 ```
-Google Sheets（10タブ・IDで相互参照＝RDB的） ← 災害対応データの正本
+Google Sheets（11タブ・IDで相互参照＝RDB的） ← 災害対応データの正本
         │ サービスアカウントで読み書き
         ▼
 lib/google-sheets.ts（接続基盤）
@@ -111,7 +111,7 @@ ID 接頭辞（M-/G-/SC-/B-/SP-/R-/SH-/C-/L-）で所属タブを判別できる
 - **配色**（`app/globals.css` の `@theme` が単一情報源）: 生成りの紙色背景（paper）×暖かい白のカード（surface）。
   文字は青みの濃墨 4 段階（ink → body → mute → faint）。主アクセントは藍（accent）、
   状態色は苔緑（good）・琥珀（warn）・紅（alert）の伝統色寄りの落ち着いたトーン
-- **タイポグラフィ**: 見出し・タイトルは Zen Old Mincho（`.font-display`）、本文・データは Noto Sans JP。
+- **タイポグラフィ**: 見出し・タイトルは Zen Old Mincho（`.font-display`）、本文・データは Inter（欧文・数字）→ Noto Sans JP（和文）のフォールバック。
   `palt` で約物を詰める。数字は tabular-nums
 - コンポーネントは色クラスを直接書かず、必ずトークン（`bg-paper` / `text-ink` / `border-line` /
   `bg-accent` / `text-warn` 等）を使う。ステータス→色の対応は `components/relief/ui.tsx` の

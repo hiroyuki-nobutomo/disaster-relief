@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { ReliefData } from "@/lib/relief/types";
 import { fmtDate, groupName, memberName, shelterName, splitDateTime } from "@/lib/relief/derive";
-import { Card, CardHeader, Empty, Pill } from "@/components/relief/ui";
+import { Card, CardHeader, Empty, Pill, kindTone, scopeTone } from "@/components/relief/ui";
 import type { PillTone } from "@/components/relief/ui";
 import type { NavTarget, Navigate } from "@/lib/relief/nav";
 
@@ -118,7 +118,7 @@ function futureItems(data: ReliefData): TimelineItem[] {
           : e.scope === "グループ"
             ? groupName(data, e.targetId)
             : memberName(data, e.targetId),
-      tone: e.scope === "全体" ? "blue" : e.scope === "グループ" ? "green" : "gray",
+      tone: scopeTone(e.scope),
       title: e.title,
       sub: [e.start ? `${e.start}${e.end ? `–${e.end}` : ""}` : "終日", e.place]
         .filter(Boolean)
@@ -139,7 +139,7 @@ function pastItems(data: ReliefData): TimelineItem[] {
       date,
       time,
       tag: l.kind,
-      tone: l.kind === "指示・決定" ? "red" : l.kind === "ヒアリング" ? "blue" : "gray",
+      tone: kindTone(l.kind),
       title: l.visibility === "共有" ? l.title : `${l.title}（${l.visibility}）`,
       sub: [l.reporter, l.shelterId && `@${shelterName(data, l.shelterId)}`]
         .filter(Boolean)

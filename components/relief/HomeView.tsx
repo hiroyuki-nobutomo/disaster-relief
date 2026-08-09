@@ -8,12 +8,12 @@ import type { PillTone } from "@/components/relief/ui";
 
 // ホーム: 「今どうなっているか」「次に何を為すべきか」を端的に示す画面。
 //  1. いまの状況 — 1行のコンパクトな状況チップ
-//  2. 次に為すべきこと — データから導出するアクションキュー（緊急度順）
-//  3. タイムライン — 上=これからの予定 /「いま」区切り / 下=これまでの実績（新しい順）
+//  2. タイムライン — 上=これからの予定 /「いま」区切り / 下=これまでの実績（新しい順）
+//  3. ネクストアクション — データから導出するアクションキュー（緊急度順）
 
 type Action = { tone: PillTone; tag: string; text: string; sub?: string };
 
-/** 「次に為すべきこと」をデータから導出する（表示は最大8件・緊急度順）。 */
+/** ネクストアクションをデータから導出する（表示は最大8件・緊急度順）。 */
 function deriveActions(data: ReliefData): Action[] {
   const today = data.basisDate;
   const actions: Action[] = [];
@@ -243,30 +243,7 @@ export default function HomeView({ data }: { data: ReliefData }) {
         </div>
       </Card>
 
-      {/* 2. 次に為すべきこと */}
-      <Card>
-        <CardHeader title="次に為すべきこと" count={actions.length} />
-        {actions.length === 0 ? (
-          <Empty>いま対応が必要な項目はありません。</Empty>
-        ) : (
-          <ol className="divide-y divide-line px-4 pb-2 sm:px-5">
-            {actions.map((a, i) => (
-              <li key={i} className="flex items-start gap-2.5 py-2.5">
-                <span className="mt-0.5 w-5 shrink-0 text-center text-[12px] font-bold text-faint">
-                  {i + 1}
-                </span>
-                <Pill tone={a.tone}>{a.tag}</Pill>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[13.5px] font-medium text-ink">{a.text}</p>
-                  {a.sub && <p className="text-[12px] text-faint">{a.sub}</p>}
-                </div>
-              </li>
-            ))}
-          </ol>
-        )}
-      </Card>
-
-      {/* 3. タイムライン（上=これから / いま / 下=これまで）。
+      {/* 2. タイムライン（上=これから / いま / 下=これまで）。
              カード内の固定高スクロール領域にし、初期表示は「いま」を中央に置く */}
       <Card>
         <CardHeader
@@ -309,6 +286,29 @@ export default function HomeView({ data }: { data: ReliefData }) {
             </>
           )}
         </div>
+      </Card>
+
+      {/* 3. ネクストアクション（タイムラインの下）。文字階層は他セクションと同一 */}
+      <Card>
+        <CardHeader title="ネクストアクション" count={actions.length} />
+        {actions.length === 0 ? (
+          <Empty>いま対応が必要な項目はありません。</Empty>
+        ) : (
+          <ol className="divide-y divide-line px-4 pb-2 sm:px-5">
+            {actions.map((a, i) => (
+              <li key={i} className="flex items-start gap-2.5 py-2.5">
+                <span className="mt-0.5 w-5 shrink-0 text-center text-[11.5px] font-bold text-faint">
+                  {i + 1}
+                </span>
+                <Pill tone={a.tone}>{a.tag}</Pill>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13.5px] font-medium text-body">{a.text}</p>
+                  {a.sub && <p className="mt-0.5 text-[12px] text-faint">{a.sub}</p>}
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
       </Card>
     </div>
   );

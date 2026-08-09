@@ -4,13 +4,14 @@ import type { ReactNode } from "react";
 import type { ImageIndex } from "@/lib/relief/types";
 
 // 災害対応アプリの共有 UI プリミティブ。
-// 白基調のカード・角丸・薄い罫線・控えめな影で、ステータスは色つきピルで示す。
+// 生成りの紙色にわずかに暖かい白のカード、墨色の文字階調、藍のアクセント。
+// ステータスは彩度を抑えた伝統色（苔・琥珀・紅・藍）のピルで示す。
 
 /** カード（セクションの基本容器）。 */
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
     <section
-      className={`rounded-2xl border border-black/[0.06] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_10px_24px_-18px_rgba(16,24,40,0.18)] ${className}`}
+      className={`rounded-2xl border border-line bg-surface shadow-[0_1px_2px_rgba(60,50,30,0.04),0_14px_30px_-22px_rgba(60,50,30,0.25)] ${className}`}
     >
       {children}
     </section>
@@ -27,11 +28,11 @@ export function CardHeader({
   right?: ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 px-4 pt-4 pb-2 sm:px-5">
-      <h2 className="text-[15px] font-semibold tracking-wide text-neutral-900">
+    <div className="flex items-center justify-between gap-3 px-4 pt-4.5 pb-2 sm:px-5">
+      <h2 className="font-display text-[16px] font-bold text-ink">
         {title}
         {count !== undefined && (
-          <span className="ml-2 rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500">
+          <span className="ml-2 align-[2px] font-sans text-[11.5px] font-semibold tracking-wide text-faint">
             {count}
           </span>
         )}
@@ -42,11 +43,11 @@ export function CardHeader({
 }
 
 const PILL_TONES = {
-  green: "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
-  amber: "bg-amber-50 text-amber-700 ring-amber-600/25",
-  red: "bg-rose-50 text-rose-700 ring-rose-600/20",
-  blue: "bg-sky-50 text-sky-700 ring-sky-600/20",
-  gray: "bg-neutral-100 text-neutral-600 ring-neutral-500/15",
+  green: "bg-good-soft text-good ring-good/20",
+  amber: "bg-warn-soft text-warn ring-warn/25",
+  red: "bg-alert-soft text-alert ring-alert/20",
+  blue: "bg-accent-soft text-accent ring-accent/20",
+  gray: "bg-wash text-mute ring-mute/15",
 } as const;
 
 export type PillTone = keyof typeof PILL_TONES;
@@ -55,7 +56,7 @@ export type PillTone = keyof typeof PILL_TONES;
 export function Pill({ tone, children }: { tone: PillTone; children: ReactNode }) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${PILL_TONES[tone]}`}
+      className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[11px] font-semibold tracking-wide ring-1 ring-inset ${PILL_TONES[tone]}`}
     >
       {children}
     </span>
@@ -96,7 +97,7 @@ export function Segmented<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <div className="inline-flex rounded-xl bg-neutral-100 p-1" role="tablist">
+    <div className="inline-flex rounded-xl bg-wash p-1" role="tablist">
       {options.map((o) => (
         <button
           key={o.value}
@@ -105,16 +106,12 @@ export function Segmented<T extends string>({
           onClick={() => onChange(o.value)}
           className={`rounded-lg px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
             value === o.value
-              ? "bg-white text-neutral-900 shadow-[0_1px_2px_rgba(16,24,40,0.12)]"
-              : "text-neutral-500 hover:text-neutral-800"
+              ? "bg-surface text-ink shadow-[0_1px_3px_rgba(60,50,30,0.15)]"
+              : "text-mute hover:text-ink"
           }`}
         >
           {o.label}
-          {o.count !== undefined && (
-            <span className={`ml-1.5 text-xs ${value === o.value ? "text-neutral-400" : "text-neutral-400"}`}>
-              {o.count}
-            </span>
-          )}
+          {o.count !== undefined && <span className="ml-1.5 text-[11.5px] text-faint">{o.count}</span>}
         </button>
       ))}
     </div>
@@ -136,8 +133,8 @@ export function Chip({
       onClick={onClick}
       className={`rounded-full border px-3 py-1 text-[12.5px] font-medium transition-colors ${
         active
-          ? "border-blue-600 bg-blue-600 text-white"
-          : "border-neutral-200 bg-white text-neutral-600 hover:border-neutral-300"
+          ? "border-accent bg-accent text-white"
+          : "border-line bg-surface text-mute hover:border-faint hover:text-body"
       }`}
     >
       {children}
@@ -147,9 +144,7 @@ export function Chip({
 
 /** 空状態。 */
 export function Empty({ children }: { children: ReactNode }) {
-  return (
-    <p className="px-5 py-10 text-center text-[13px] leading-relaxed text-neutral-400">{children}</p>
-  );
+  return <p className="px-5 py-10 text-center text-[13px] leading-relaxed text-faint">{children}</p>;
 }
 
 /** ラベル＋値（詳細行）。値が空なら描画しない。 */
@@ -157,8 +152,8 @@ export function Field({ label, value }: { label: string; value?: ReactNode }) {
   if (value === undefined || value === null || value === "") return null;
   return (
     <div className="flex gap-2 text-[13px] leading-relaxed">
-      <dt className="w-16 shrink-0 text-neutral-400">{label}</dt>
-      <dd className="min-w-0 flex-1 break-words text-neutral-700">{value}</dd>
+      <dt className="w-16 shrink-0 text-faint">{label}</dt>
+      <dd className="min-w-0 flex-1 break-words text-body">{value}</dd>
     </div>
   );
 }
@@ -167,7 +162,10 @@ export function Field({ label, value }: { label: string; value?: ReactNode }) {
 export function Tel({ phone }: { phone?: string }) {
   if (!phone) return null;
   return (
-    <a href={`tel:${phone.replace(/[^0-9+]/g, "")}`} className="text-blue-600 hover:underline">
+    <a
+      href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
+      className="text-accent underline-offset-2 hover:underline"
+    >
       {phone}
     </a>
   );
@@ -177,7 +175,7 @@ export function Tel({ phone }: { phone?: string }) {
 export function Mail({ email }: { email?: string }) {
   if (!email) return null;
   return (
-    <a href={`mailto:${email}`} className="break-all text-blue-600 hover:underline">
+    <a href={`mailto:${email}`} className="break-all text-accent underline-offset-2 hover:underline">
       {email}
     </a>
   );
@@ -202,7 +200,7 @@ export function AttachedImages({ images, recordId }: { images: ImageIndex[]; rec
             src={`/api/relief/image?id=${encodeURIComponent(img.id)}`}
             alt="添付写真"
             loading="lazy"
-            className="h-14 w-14 rounded-lg border border-neutral-200 object-cover"
+            className="h-14 w-14 rounded-lg border border-line object-cover"
           />
         </a>
       ))}

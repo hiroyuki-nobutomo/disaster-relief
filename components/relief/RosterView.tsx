@@ -19,14 +19,14 @@ export default function RosterView({ data }: { data: ReliefData }) {
         {data.groups.map((g) => (
           <Card key={g.id} className="px-4 py-3.5 sm:px-5">
             <div className="flex items-baseline justify-between gap-2">
-              <h3 className="text-[14.5px] font-semibold text-neutral-900">{g.name}</h3>
-              <span className="text-[12px] text-neutral-400">
+              <h3 className="text-[14.5px] font-semibold text-ink">{g.name}</h3>
+              <span className="text-[12px] text-faint">
                 {data.members.filter((m) => m.groupId === g.id).length}名
               </span>
             </div>
-            {g.mission && <p className="mt-1 text-[13px] text-neutral-500">{g.mission}</p>}
+            {g.mission && <p className="mt-1 text-[13px] text-mute">{g.mission}</p>}
             {g.leaderId && (
-              <p className="mt-1 text-[12px] text-neutral-400">
+              <p className="mt-1 text-[12px] text-faint">
                 リーダー: {memberName(data, g.leaderId)}
               </p>
             )}
@@ -58,25 +58,25 @@ export default function RosterView({ data }: { data: ReliefData }) {
         {members.length === 0 ? (
           <Empty>担当者が登録されていません。</Empty>
         ) : (
-          <ul className="divide-y divide-neutral-100 px-4 pb-2 sm:px-5">
+          <ul className="divide-y divide-line px-4 pb-2 sm:px-5">
             {members.map((m) => (
               <li key={m.id} className="py-3">
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <span className="text-[14px] font-semibold text-neutral-900">{m.name}</span>
-                  {m.kana && <span className="text-[12px] text-neutral-400">{m.kana}</span>}
-                  <span className="text-[12px] text-neutral-400">{m.id}</span>
+                  <span className="text-[14px] font-semibold text-ink">{m.name}</span>
+                  {m.kana && <span className="text-[12px] text-faint">{m.kana}</span>}
+                  <span className="text-[12px] text-faint">{m.id}</span>
                   {m.role && (
-                    <span className="rounded-md bg-blue-50 px-1.5 py-0.5 text-[11.5px] font-medium text-blue-700">
+                    <span className="rounded-md bg-accent-soft px-1.5 py-0.5 text-[11.5px] font-medium text-accent">
                       {m.role}
                     </span>
                   )}
                 </div>
-                <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-[13px] text-neutral-500">
+                <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-[13px] text-mute">
                   {m.org && <span>{m.org}</span>}
                   <Tel phone={m.phone} />
                   <Mail email={m.email} />
                 </div>
-                {m.note && <p className="mt-1 text-[12.5px] text-neutral-400">{m.note}</p>}
+                {m.note && <p className="mt-1 text-[12.5px] text-faint">{m.note}</p>}
               </li>
             ))}
           </ul>

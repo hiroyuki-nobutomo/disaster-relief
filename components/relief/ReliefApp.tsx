@@ -122,13 +122,17 @@ export default function ReliefApp({ initial }: { initial: ReliefData }) {
   const title = data.disasterName || "災害対応 情報管理";
 
   return (
-    <div className="min-h-dvh bg-[#f4f5f7] text-neutral-900">
+    <div className="min-h-dvh bg-paper text-ink">
       {/* デスクトップ: 左サイドバー */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r border-black/[0.06] bg-white lg:flex">
-        <div className="px-5 pt-6 pb-4">
-          <p className="text-[11px] font-semibold tracking-widest text-blue-600">DISASTER RELIEF</p>
-          <h1 className="mt-1 text-[15px] leading-snug font-bold text-neutral-900">{title}</h1>
-          {data.hq && <p className="mt-0.5 text-[12px] text-neutral-400">{data.hq}</p>}
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r border-line bg-surface lg:flex">
+        <div className="px-5 pt-7 pb-5">
+          <p className="text-[10.5px] font-semibold tracking-[0.22em] text-accent/70">
+            DISASTER RELIEF
+          </p>
+          <h1 className="font-display mt-1.5 text-[16.5px] leading-snug font-bold text-ink">
+            {title}
+          </h1>
+          {data.hq && <p className="mt-1 text-[11.5px] tracking-wide text-faint">{data.hq}</p>}
         </div>
         <nav className="flex-1 space-y-0.5 px-3">
           {TABS.map((t) => (
@@ -137,8 +141,8 @@ export default function ReliefApp({ initial }: { initial: ReliefData }) {
               onClick={() => setTab(t.key)}
               className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-colors ${
                 tab === t.key
-                  ? "bg-blue-50 text-blue-700"
-                  : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800"
+                  ? "bg-accent-soft text-accent"
+                  : "text-mute hover:bg-paper hover:text-body"
               }`}
             >
               <TabIcon icon={t.icon} className="h-[18px] w-[18px]" />
@@ -149,43 +153,43 @@ export default function ReliefApp({ initial }: { initial: ReliefData }) {
         <div className="space-y-2 px-5 py-4">
           {data.currentMemberId && (
             <div className="flex items-center justify-between gap-2">
-              <p className="min-w-0 truncate text-[12px] font-medium text-neutral-600">
+              <p className="min-w-0 truncate text-[12px] font-medium text-body">
                 👤 {data.currentMemberName || data.currentMemberId}
               </p>
               <button
                 onClick={logout}
-                className="shrink-0 text-[11.5px] font-medium text-neutral-400 hover:text-neutral-700"
+                className="shrink-0 text-[11.5px] font-medium text-faint hover:text-body"
               >
                 ログアウト
               </button>
             </div>
           )}
-          <p className="text-[11px] leading-relaxed text-neutral-400">
+          <p className="text-[11px] leading-relaxed text-faint">
             {data.source === "seed" ? "サンプルデータ表示中（Sheets 未接続）" : "データ: Google Sheets"}
           </p>
         </div>
       </aside>
 
       {/* モバイル: 上部ヘッダー */}
-      <header className="sticky top-0 z-30 border-b border-black/[0.06] bg-white/90 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur lg:hidden">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="min-w-0">
-            <h1 className="truncate text-[15px] font-bold">{title}</h1>
-            <p className="text-[11px] text-neutral-400">
+            <h1 className="font-display truncate text-[16px] font-bold text-ink">{title}</h1>
+            <p className="text-[11px] tracking-wide text-faint">
               {fmtDate(data.basisDate)}
               {data.hq ? `・${data.hq}` : ""}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             {data.source === "seed" && (
-              <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10.5px] font-medium text-amber-700">
+              <span className="rounded-full bg-warn-soft px-2 py-0.5 text-[10.5px] font-medium text-warn">
                 サンプル
               </span>
             )}
             {data.currentMemberId && (
               <button
                 onClick={logout}
-                className="rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-medium text-neutral-600"
+                className="rounded-full bg-wash px-2.5 py-1 text-[11px] font-medium text-body"
               >
                 {data.currentMemberName || data.currentMemberId} ▾
               </button>
@@ -198,11 +202,11 @@ export default function ReliefApp({ initial }: { initial: ReliefData }) {
       <main className="px-4 pt-4 pb-28 sm:px-6 lg:ml-56 lg:px-8 lg:pt-8 lg:pb-16">
         <div className="mx-auto max-w-5xl">
           {/* デスクトップのページ見出し */}
-          <div className="mb-5 hidden items-center justify-between lg:flex">
-            <h2 className="text-xl font-bold tracking-tight">
+          <div className="mb-6 hidden items-baseline justify-between lg:flex">
+            <h2 className="font-display text-[22px] font-bold text-ink">
               {TABS.find((t) => t.key === tab)?.label}
             </h2>
-            <p className="text-[13px] text-neutral-400">{fmtDate(data.basisDate)}</p>
+            <p className="text-[13px] tracking-wide text-faint">{fmtDate(data.basisDate)}</p>
           </div>
           {view}
         </div>
@@ -211,7 +215,7 @@ export default function ReliefApp({ initial }: { initial: ReliefData }) {
       {/* 取り込みボタン（フローティング・全画面共通） */}
       <button
         onClick={() => setIntakeOpen(true)}
-        className="fixed right-4 bottom-20 z-40 flex items-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-[13.5px] font-semibold text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.55)] transition-transform hover:scale-[1.03] active:scale-95 lg:right-8 lg:bottom-8"
+        className="fixed right-4 bottom-20 z-40 flex items-center gap-2 rounded-full bg-accent px-4 py-3 text-[13.5px] font-semibold text-white shadow-[0_8px_24px_-6px_rgba(49,86,126,0.5)] transition-transform hover:scale-[1.03] active:scale-95 lg:right-8 lg:bottom-8"
       >
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
           <rect x="8" y="2.5" width="8" height="4" rx="1" />
@@ -221,14 +225,14 @@ export default function ReliefApp({ initial }: { initial: ReliefData }) {
       </button>
 
       {/* モバイル: 下部タブバー */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-black/[0.06] bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
         <div className="grid grid-cols-6">
           {TABS.map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
               className={`flex flex-col items-center gap-0.5 py-2 text-[10.5px] font-medium transition-colors ${
-                tab === t.key ? "text-blue-600" : "text-neutral-400"
+                tab === t.key ? "text-accent" : "text-faint"
               }`}
             >
               <TabIcon icon={t.icon} className="h-[21px] w-[21px]" />

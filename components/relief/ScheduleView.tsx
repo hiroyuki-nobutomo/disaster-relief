@@ -70,12 +70,12 @@ export default function ScheduleView({ data }: { data: ReliefData }) {
           onChange={setSeg}
         />
         {seg === "schedule" && (
-          <label className="flex items-center gap-2 text-[13px] text-neutral-500">
+          <label className="flex items-center gap-2 text-[13px] text-mute">
             表示対象
             <select
               value={target}
               onChange={(e) => setTarget(e.target.value)}
-              className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-[13px] text-neutral-800 focus:border-blue-500 focus:outline-none"
+              className="rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[13px] text-body focus:border-accent focus:outline-none"
             >
               <option value="all">全体一覧</option>
               {data.members.map((m) => (
@@ -106,16 +106,16 @@ export default function ScheduleView({ data }: { data: ReliefData }) {
                     ) : undefined
                   }
                 />
-                <ul className="divide-y divide-neutral-100 px-4 pb-2 sm:px-5">
+                <ul className="divide-y divide-line px-4 pb-2 sm:px-5">
                   {list.map((e) => (
                     <li key={e.id} className="flex items-baseline gap-3 py-2.5">
-                      <span className="w-24 shrink-0 text-[13px] font-semibold tabular-nums text-neutral-900">
+                      <span className="w-24 shrink-0 text-[13px] font-semibold tabular-nums text-ink">
                         {e.start ? `${e.start}${e.end ? `–${e.end}` : ""}` : "終日"}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-[13.5px] font-medium text-neutral-800">{e.title}</p>
+                        <p className="text-[13.5px] font-medium text-body">{e.title}</p>
                         {(e.place || e.note) && (
-                          <p className="text-[12px] text-neutral-400">
+                          <p className="text-[12px] text-faint">
                             {[e.place, e.note].filter(Boolean).join("・")}
                           </p>
                         )}
@@ -126,12 +126,12 @@ export default function ScheduleView({ data }: { data: ReliefData }) {
                   {/* 本人の予約（宿泊・移動）を同じ日に重ねて表示 */}
                   {stays.map((b) => (
                     <li key={b.id} className="flex items-baseline gap-3 py-2.5">
-                      <span className="w-24 shrink-0 text-[13px] text-neutral-400">
+                      <span className="w-24 shrink-0 text-[13px] text-faint">
                         {BOOKING_ICON[b.type]} {b.type}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-[13.5px] text-neutral-600">{b.name}</p>
-                        {b.detail && <p className="text-[12px] text-neutral-400">{b.detail}</p>}
+                        <p className="text-[13.5px] text-body">{b.name}</p>
+                        {b.detail && <p className="text-[12px] text-faint">{b.detail}</p>}
                       </div>
                       <Pill tone={statusTone(b.status)}>{b.status}</Pill>
                     </li>
@@ -147,22 +147,22 @@ export default function ScheduleView({ data }: { data: ReliefData }) {
           {sortedBookings.length === 0 ? (
             <Empty>予約が登録されていません。予約確認メールを「取り込み」に貼り付けると登録できます。</Empty>
           ) : (
-            <ul className="divide-y divide-neutral-100 px-4 pb-2 sm:px-5">
+            <ul className="divide-y divide-line px-4 pb-2 sm:px-5">
               {sortedBookings.map((b) => (
                 <li key={b.id} className="py-3">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span className="text-[15px]">{BOOKING_ICON[b.type]}</span>
-                    <span className="text-[14px] font-semibold text-neutral-900">
+                    <span className="text-[14px] font-semibold text-ink">
                       {memberName(data, b.memberId)}
                     </span>
-                    <span className="text-[13px] tabular-nums text-neutral-500">
+                    <span className="text-[13px] tabular-nums text-mute">
                       {fmtDate(b.startDate)}
                       {b.endDate && b.endDate !== b.startDate ? ` 〜 ${fmtDate(b.endDate)}` : ""}
                     </span>
                     <Pill tone={statusTone(b.status)}>{b.status}</Pill>
                   </div>
-                  <p className="mt-0.5 text-[13.5px] text-neutral-700">{b.name}</p>
-                  <p className="text-[12px] text-neutral-400">
+                  <p className="mt-0.5 text-[13.5px] text-body">{b.name}</p>
+                  <p className="text-[12px] text-faint">
                     {[b.detail, b.confNo && `予約番号 ${b.confNo}`, b.note]
                       .filter(Boolean)
                       .join("・")}

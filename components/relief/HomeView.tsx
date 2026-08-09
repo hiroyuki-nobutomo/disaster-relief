@@ -174,21 +174,21 @@ function TimelineRow({ item, dim }: { item: TimelineItem; dim?: boolean }) {
   return (
     <li className={`relative flex gap-3.5 ${dim ? "opacity-80" : ""}`}>
       <div className="flex w-[4.2rem] shrink-0 flex-col items-end pt-0.5">
-        <span className="text-[12px] font-semibold tabular-nums text-neutral-500">
+        <span className="text-[12px] font-semibold tabular-nums text-mute">
           {fmtDate(item.date)}
         </span>
-        {item.time && <span className="text-[11px] tabular-nums text-neutral-400">{item.time}</span>}
+        {item.time && <span className="text-[11px] tabular-nums text-faint">{item.time}</span>}
       </div>
       <div className="flex flex-col items-center">
-        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-neutral-300" />
-        <span className="w-px flex-1 bg-neutral-200" />
+        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-line" />
+        <span className="w-px flex-1 bg-line" />
       </div>
       <div className="min-w-0 flex-1 pb-4">
         <div className="flex flex-wrap items-center gap-1.5">
           <Pill tone={item.tone}>{item.tag}</Pill>
-          <p className="text-[13.5px] font-medium text-neutral-800">{item.title}</p>
+          <p className="text-[13.5px] font-medium text-body">{item.title}</p>
         </div>
-        {item.sub && <p className="mt-0.5 text-[12px] text-neutral-400">{item.sub}</p>}
+        {item.sub && <p className="mt-0.5 text-[12px] text-faint">{item.sub}</p>}
       </div>
     </li>
   );
@@ -222,7 +222,7 @@ export default function HomeView({ data }: { data: ReliefData }) {
       {/* 1. いまの状況 */}
       <Card className="px-4 py-3 sm:px-5">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 text-[12px] font-semibold text-neutral-500">いまの状況</span>
+          <span className="font-display mr-1 text-[13px] font-bold text-ink">いまの状況</span>
           {chips.map((c) => (
             <Pill key={c.label} tone={c.tone}>
               {c.label}
@@ -237,16 +237,16 @@ export default function HomeView({ data }: { data: ReliefData }) {
         {actions.length === 0 ? (
           <Empty>いま対応が必要な項目はありません。</Empty>
         ) : (
-          <ol className="divide-y divide-neutral-100 px-4 pb-2 sm:px-5">
+          <ol className="divide-y divide-line px-4 pb-2 sm:px-5">
             {actions.map((a, i) => (
               <li key={i} className="flex items-start gap-2.5 py-2.5">
-                <span className="mt-0.5 w-5 shrink-0 text-center text-[12px] font-bold text-neutral-300">
+                <span className="mt-0.5 w-5 shrink-0 text-center text-[12px] font-bold text-faint">
                   {i + 1}
                 </span>
                 <Pill tone={a.tone}>{a.tag}</Pill>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[13.5px] font-medium text-neutral-900">{a.text}</p>
-                  {a.sub && <p className="text-[12px] text-neutral-400">{a.sub}</p>}
+                  <p className="text-[13.5px] font-medium text-ink">{a.text}</p>
+                  {a.sub && <p className="text-[12px] text-faint">{a.sub}</p>}
                 </div>
               </li>
             ))}
@@ -256,7 +256,7 @@ export default function HomeView({ data }: { data: ReliefData }) {
 
       {/* 3. タイムライン（上=これから / いま / 下=これまで） */}
       <Card>
-        <CardHeader title="タイムライン" right={<span className="text-[12px] text-neutral-400">上: 予定 ／ 下: 実績</span>} />
+        <CardHeader title="タイムライン" right={<span className="text-[12px] text-faint">上: 予定 ／ 下: 実績</span>} />
         <div className="px-4 pb-4 sm:px-5">
           {future.length === 0 && past.length === 0 ? (
             <Empty>まだ予定も実績もありません。「取り込み」から登録できます。</Empty>
@@ -270,11 +270,11 @@ export default function HomeView({ data }: { data: ReliefData }) {
               </ol>
               {/* いま */}
               <div className="my-1 flex items-center gap-3" aria-label="現在">
-                <span className="h-px flex-1 bg-rose-200" />
-                <span className="rounded-full bg-rose-50 px-3 py-1 text-[11.5px] font-bold text-rose-600 ring-1 ring-rose-200 ring-inset">
+                <span className="h-px flex-1 bg-alert/30" />
+                <span className="rounded-full bg-alert-soft px-3 py-1 text-[11.5px] font-bold text-alert ring-1 ring-alert/30 ring-inset">
                   いま（{fmtDate(today)}）
                 </span>
-                <span className="h-px flex-1 bg-rose-200" />
+                <span className="h-px flex-1 bg-alert/30" />
               </div>
               {/* これまで（新しい順） */}
               <ol className="pt-3">

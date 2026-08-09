@@ -1,5 +1,34 @@
 @import "tailwindcss";
 
+/* ── デザイントークン（単一情報源）──────────────────────────────────────────
+ * 「知的で美しい」を方針に、和の落ち着いた配色で統一する。
+ *  - 紙: 生成り系の温かい背景 / 面: わずかに暖かい白
+ *  - 墨: 青みの濃墨（見出し）→ 本文 → 補足 → 淡、の4段階の文字階調
+ *  - 藍: 主アクセント（ナビ・ボタン・リンク）
+ *  - 苔(good)・琥珀(warn)・紅(alert): 状態色。彩度を抑えた伝統色寄り
+ * Tailwind v4 の @theme に置くことで bg-paper / text-ink / border-line 等の
+ * ユーティリティが生える。値を変えるときはここだけ直す。
+ */
+@theme {
+  --color-paper: #f5f3ee; /* 背景（生成り） */
+  --color-wash: #edeae2; /* 淡い面（バッジ・セグメント地） */
+  --color-surface: #fffefc; /* カード面 */
+  --color-ink: #1e2836; /* 見出し・強調 */
+  --color-body: #3c4657; /* 本文 */
+  --color-mute: #6d7889; /* 補足 */
+  --color-faint: #9aa3b1; /* さらに薄い注記 */
+  --color-line: #e5e1d6; /* 罫線 */
+  --color-accent: #31567e; /* 藍（主アクセント） */
+  --color-accent-deep: #25415f;
+  --color-accent-soft: #e9eff5; /* 藍の淡色面 */
+  --color-good: #4e7a5c; /* 苔緑 */
+  --color-good-soft: #ebf2ec;
+  --color-warn: #9c6f26; /* 琥珀 */
+  --color-warn-soft: #f7efdd;
+  --color-alert: #ad4531; /* 紅 */
+  --color-alert-soft: #f8ebe6;
+}
+
 :root {
   color-scheme: light;
 }
@@ -14,5 +43,13 @@ body {
   font-family: var(--font-inter), var(--font-noto-sans-jp), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.015em;
+  font-feature-settings: "palt"; /* 約物を詰め、日本語の見た目を整える */
+}
+
+/* 見出し用の明朝体（層の要所だけに使い、データ部は角ゴのまま） */
+.font-display {
+  font-family: var(--font-zen-mincho), var(--font-noto-sans-jp), serif;
+  letter-spacing: 0.04em;
+  font-feature-settings: "palt";
 }

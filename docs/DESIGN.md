@@ -97,3 +97,14 @@ logs.author_id ──► members.id
 - 経費・予算管理／資料（Drive）連携／地図の埋め込み表示（現状はリンク）
 - 画像の Drive 保存への切替（現状は Sheets 内 base64。件数が増えたら移行を検討）
 - 既存行の編集・削除の Web 化（現状はシート側で実施）
+
+## 7. デザイン言語
+
+- **配色**（`app/globals.css` の `@theme` が単一情報源）: 生成りの紙色背景（paper）×暖かい白のカード（surface）。
+  文字は青みの濃墨 4 段階（ink → body → mute → faint）。主アクセントは藍（accent）、
+  状態色は苔緑（good）・琥珀（warn）・紅（alert）の伝統色寄りの落ち着いたトーン
+- **タイポグラフィ**: 見出し・タイトルは Zen Old Mincho（`.font-display`）、本文・データは Noto Sans JP。
+  `palt` で約物を詰める。数字は tabular-nums
+- コンポーネントは色クラスを直接書かず、必ずトークン（`bg-paper` / `text-ink` / `border-line` /
+  `bg-accent` / `text-warn` 等）を使う。ステータス→色の対応は `components/relief/ui.tsx` の
+  `statusTone` に一元化

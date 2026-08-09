@@ -67,12 +67,12 @@ export default function LogsView({ data, onChanged }: { data: ReliefData; onChan
               <li key={l.id} className="relative flex gap-4">
                 {/* タイムラインの縦線とドット */}
                 <div className="flex flex-col items-center">
-                  <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full border-2 border-blue-500 bg-white" />
-                  {i < logs.length - 1 && <span className="w-px flex-1 bg-neutral-200" />}
+                  <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full border-2 border-accent bg-surface" />
+                  {i < logs.length - 1 && <span className="w-px flex-1 bg-line" />}
                 </div>
                 <div className="min-w-0 flex-1 pb-5">
                   <div className="flex flex-wrap items-center gap-2 pt-0.5">
-                    <span className="text-[12.5px] font-semibold tabular-nums text-neutral-500">
+                    <span className="text-[12.5px] font-semibold tabular-nums text-mute">
                       {fmtDate(date)}
                       {time ? ` ${time}` : ""}
                     </span>
@@ -84,9 +84,9 @@ export default function LogsView({ data, onChanged }: { data: ReliefData; onChan
                         {l.visibility === "下書き" ? "下書き（自分のみ）" : "プライベート"}
                       </Pill>
                     )}
-                    {l.reporter && <span className="text-[12px] text-neutral-400">{l.reporter}</span>}
+                    {l.reporter && <span className="text-[12px] text-faint">{l.reporter}</span>}
                     {l.shelterId && (
-                      <span className="text-[12px] text-neutral-400">
+                      <span className="text-[12px] text-faint">
                         @{shelterName(data, l.shelterId)}
                       </span>
                     )}
@@ -96,20 +96,20 @@ export default function LogsView({ data, onChanged }: { data: ReliefData; onChan
                         <button
                           onClick={() => share(l.id)}
                           disabled={sharing === l.id}
-                          className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[11.5px] font-semibold text-blue-700 transition-colors hover:bg-blue-100 disabled:opacity-50"
+                          className="rounded-full border border-accent/30 bg-accent-soft px-2.5 py-0.5 text-[11.5px] font-semibold text-accent transition-colors hover:bg-accent-soft disabled:opacity-50"
                         >
                           {sharing === l.id ? "共有中…" : "全体に共有する"}
                         </button>
                       )}
                   </div>
-                  <p className="mt-1 text-[14px] font-medium text-neutral-900">{l.title}</p>
+                  <p className="mt-1 text-[14px] font-medium text-ink">{l.title}</p>
                   {l.content && (
-                    <p className="mt-1 text-[13px] leading-relaxed whitespace-pre-wrap text-neutral-600">
+                    <p className="mt-1 text-[13px] leading-relaxed whitespace-pre-wrap text-body">
                       {l.content}
                     </p>
                   )}
                   <AttachedImages images={data.images} recordId={l.id} />
-                  <p className="mt-1 text-[11.5px] text-neutral-400">
+                  <p className="mt-1 text-[11.5px] text-faint">
                     {[
                       l.tags &&
                         l.tags

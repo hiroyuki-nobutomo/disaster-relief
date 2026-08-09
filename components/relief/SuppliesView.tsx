@@ -47,7 +47,7 @@ export default function SuppliesView({ data }: { data: ReliefData }) {
               要請はまだ登録されていません。避難所からの依頼メール等を「取り込み」に貼り付けると登録できます。
             </Empty>
           ) : (
-            <ul className="divide-y divide-neutral-100 px-4 pb-2 sm:px-5">
+            <ul className="divide-y divide-line px-4 pb-2 sm:px-5">
               {requests.map((r) => {
                 const linked = data.supplies.filter((s) => s.requestId === r.id);
                 return (
@@ -55,14 +55,14 @@ export default function SuppliesView({ data }: { data: ReliefData }) {
                     <div className="flex items-start gap-2.5">
                       <Pill tone={statusTone(r.urgency)}>緊急度 {r.urgency}</Pill>
                       <div className="min-w-0 flex-1">
-                        <p className="text-[14px] font-medium text-neutral-900">{r.content}</p>
-                        <p className="mt-0.5 text-[12px] text-neutral-400">
+                        <p className="text-[14px] font-medium text-ink">{r.content}</p>
+                        <p className="mt-0.5 text-[12px] text-faint">
                           {[r.id, shelterName(data, r.shelterId), r.qty, fmtDate(r.date), r.note]
                             .filter(Boolean)
                             .join("・")}
                         </p>
                         {linked.length > 0 && (
-                          <p className="mt-1 text-[12px] text-neutral-500">
+                          <p className="mt-1 text-[12px] text-mute">
                             ↳ 手配:{" "}
                             {linked
                               .map((s) => `${s.item}（${s.status}）`)
@@ -90,10 +90,10 @@ export default function SuppliesView({ data }: { data: ReliefData }) {
             <div className="overflow-x-auto px-4 pb-4 sm:px-5">
               <table className="w-full min-w-[720px] border-separate border-spacing-0 text-[13px]">
                 <thead>
-                  <tr className="text-left text-[12px] text-neutral-400">
+                  <tr className="text-left text-[12px] text-faint">
                     {["品目", "数量", "ロット番号", "送付元 → 送付先", "発送 / 到着", "状態"].map(
                       (h) => (
-                        <th key={h} className="border-b border-neutral-200 py-2 pr-4 font-medium">
+                        <th key={h} className="border-b border-line py-2 pr-4 font-medium">
                           {h}
                         </th>
                       ),
@@ -103,28 +103,28 @@ export default function SuppliesView({ data }: { data: ReliefData }) {
                 <tbody>
                   {supplies.map((s) => (
                     <tr key={s.id} className="align-top">
-                      <td className="border-b border-neutral-100 py-2.5 pr-4">
-                        <p className="font-medium text-neutral-900">{s.item}</p>
-                        <p className="text-[11.5px] text-neutral-400">
+                      <td className="border-b border-line py-2.5 pr-4">
+                        <p className="font-medium text-ink">{s.item}</p>
+                        <p className="text-[11.5px] text-faint">
                           {[s.id, s.category].filter(Boolean).join("・")}
                         </p>
                       </td>
-                      <td className="border-b border-neutral-100 py-2.5 pr-4 tabular-nums text-neutral-700">
+                      <td className="border-b border-line py-2.5 pr-4 tabular-nums text-body">
                         {s.qty}
                         {s.unit}
                       </td>
-                      <td className="border-b border-neutral-100 py-2.5 pr-4 text-neutral-500">
+                      <td className="border-b border-line py-2.5 pr-4 text-mute">
                         {s.lotNo ?? "—"}
                       </td>
-                      <td className="border-b border-neutral-100 py-2.5 pr-4 text-neutral-700">
+                      <td className="border-b border-line py-2.5 pr-4 text-body">
                         {s.from ?? "—"} → {shelterName(data, s.toShelterId) || "—"}
                       </td>
-                      <td className="border-b border-neutral-100 py-2.5 pr-4 tabular-nums text-neutral-500">
+                      <td className="border-b border-line py-2.5 pr-4 tabular-nums text-mute">
                         {[s.shipDate && fmtDate(s.shipDate), s.arriveDate && fmtDate(s.arriveDate)]
                           .filter(Boolean)
                           .join(" / ") || "—"}
                       </td>
-                      <td className="border-b border-neutral-100 py-2.5">
+                      <td className="border-b border-line py-2.5">
                         <Pill tone={statusTone(s.status)}>{s.status}</Pill>
                       </td>
                     </tr>

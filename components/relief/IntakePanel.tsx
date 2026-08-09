@@ -274,13 +274,13 @@ export default function IntakePanel({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-neutral-900/40 backdrop-blur-[2px] sm:items-center sm:p-6">
-      <div className="flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:max-h-[85dvh] sm:max-w-3xl sm:rounded-2xl">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 backdrop-blur-[2px] sm:items-center sm:p-6">
+      <div className="flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-surface shadow-2xl sm:max-h-[85dvh] sm:max-w-3xl sm:rounded-2xl">
         {/* ヘッダー */}
-        <div className="flex items-center justify-between border-b border-neutral-100 px-5 py-3.5">
-          <h2 className="text-[15px] font-semibold text-neutral-900">
+        <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
+          <h2 className="font-display text-[16px] font-bold text-ink">
             貼り付け取り込み
-            <span className="ml-2 text-[12px] font-normal text-neutral-400">
+            <span className="ml-2 text-[12px] font-normal text-faint">
               メール・メッセージ・メモ → シートへ反映
             </span>
           </h2>
@@ -290,7 +290,7 @@ export default function IntakePanel({
               if (phase === "done") reset();
             }}
             aria-label="閉じる"
-            className="rounded-lg p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700"
+            className="rounded-lg p-1.5 text-faint transition-colors hover:bg-wash hover:text-body"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M18 6 6 18M6 6l12 12" />
@@ -302,11 +302,11 @@ export default function IntakePanel({
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
           {phase === "input" || phase === "analyzing" ? (
             <>
-              <p className="mb-2 text-[13px] leading-relaxed text-neutral-500">
+              <p className="mb-2 text-[13px] leading-relaxed text-mute">
                 受信したメール・メッセージ・ヒアリングメモの貼り付け、または手書きの要請書・FAX・
-                送り状などの<strong className="font-semibold text-neutral-700">写真</strong>から、
+                送り状などの<strong className="font-semibold text-body">写真</strong>から、
                 「名簿・予定・予約・物資・要請・避難所・連絡先・記録」に整理します。
-                <strong className="font-semibold text-neutral-700">
+                <strong className="font-semibold text-body">
                   シートへの反映は、次の画面で内容を確認してからです。
                 </strong>
               </p>
@@ -317,7 +317,7 @@ export default function IntakePanel({
                 placeholder={
                   "例）\n益城町総合体育館の運営者より。避難者は約620名。簡易トイレが不足しており、200個ほど追加を至急お願いしたい。…"
                 }
-                className="h-48 w-full resize-none rounded-xl border border-neutral-200 bg-neutral-50 p-3.5 text-[13.5px] leading-relaxed text-neutral-800 placeholder:text-neutral-400 focus:border-blue-500 focus:bg-white focus:outline-none"
+                className="h-48 w-full resize-none rounded-xl border border-line bg-paper p-3.5 text-[13.5px] leading-relaxed text-body placeholder:text-faint focus:border-accent focus:bg-surface focus:outline-none"
               />
               {/* 写真の追加（カメラ撮影・ファイル選択）。圧縮して解析＋証跡保存に使う */}
               <div className="mt-2.5 flex flex-wrap items-center gap-2">
@@ -333,7 +333,7 @@ export default function IntakePanel({
                 <button
                   onClick={() => fileRef.current?.click()}
                   disabled={phase === "analyzing"}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 px-3 py-2 text-[12.5px] font-medium text-neutral-700 transition-colors hover:border-neutral-300 hover:bg-neutral-50 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-line px-3 py-2 text-[12.5px] font-medium text-body transition-colors hover:border-faint hover:bg-paper disabled:opacity-50"
                 >
                   📷 写真を追加（撮影・選択）
                 </button>
@@ -343,46 +343,46 @@ export default function IntakePanel({
                     <img
                       src={p.base64}
                       alt={`添付写真 ${i + 1}`}
-                      className="h-14 w-14 rounded-lg border border-neutral-200 object-cover"
+                      className="h-14 w-14 rounded-lg border border-line object-cover"
                     />
                     <button
                       onClick={() => setPhotos(photos.filter((_, j) => j !== i))}
                       aria-label={`写真 ${i + 1} を削除`}
-                      className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-neutral-700 text-[10px] text-white"
+                      className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-[10px] text-white"
                     >
                       ✕
                     </button>
                   </span>
                 ))}
               </div>
-              {error && <p className="mt-2 text-[13px] text-rose-600">{error}</p>}
+              {error && <p className="mt-2 text-[13px] text-alert">{error}</p>}
             </>
           ) : phase === "done" ? (
             <div className="py-10 text-center">
               <p className="text-3xl">✅</p>
-              <p className="mt-3 text-[14px] font-medium text-neutral-800">{savedMsg}</p>
+              <p className="mt-3 text-[14px] font-medium text-body">{savedMsg}</p>
               <button
                 onClick={reset}
-                className="mt-5 rounded-xl border border-neutral-200 px-4 py-2 text-[13px] font-medium text-neutral-700 hover:bg-neutral-50"
+                className="mt-5 rounded-xl border border-line px-4 py-2 text-[13px] font-medium text-body hover:bg-paper"
               >
                 続けて取り込む
               </button>
             </div>
           ) : (
             <>
-              <p className="mb-3 text-[13px] leading-relaxed text-neutral-500">
+              <p className="mb-3 text-[13px] leading-relaxed text-mute">
                 解析結果です。内容を確認し、必要なら修正のうえ、登録する行にチェックを入れて保存してください。
                 {photos.length > 0 && (
                   <>（添付した写真 {photos.length} 枚は、圧縮して証跡としてシートに保存されます）</>
                 )}
               </p>
               {note && (
-                <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-[12.5px] leading-relaxed text-amber-800">
+                <p className="mb-3 rounded-lg bg-warn-soft px-3 py-2 text-[12.5px] leading-relaxed text-warn">
                   {note}
                 </p>
               )}
               {draftCount === 0 && (
-                <p className="py-8 text-center text-[13px] text-neutral-400">
+                <p className="py-8 text-center text-[13px] text-faint">
                   登録できる情報が見つかりませんでした。
                 </p>
               )}
@@ -392,7 +392,7 @@ export default function IntakePanel({
                     <div key={table}>
                       <div className="mb-1.5 flex items-center gap-2">
                         <Pill tone="blue">{TABLE_META[table]?.label ?? table}</Pill>
-                        <span className="text-[12px] text-neutral-400">{rows.length}件</span>
+                        <span className="text-[12px] text-faint">{rows.length}件</span>
                       </div>
                       <div className="space-y-2">
                         {rows.map((row, i) => {
@@ -402,10 +402,10 @@ export default function IntakePanel({
                             <div
                               key={key}
                               className={`rounded-xl border p-3 transition-colors ${
-                                checked ? "border-blue-200 bg-blue-50/40" : "border-neutral-200 bg-neutral-50 opacity-60"
+                                checked ? "border-accent/30 bg-accent-soft/60" : "border-line bg-paper opacity-60"
                               }`}
                             >
-                              <label className="mb-2 flex items-center gap-2 text-[12.5px] font-medium text-neutral-600">
+                              <label className="mb-2 flex items-center gap-2 text-[12.5px] font-medium text-body">
                                 <input
                                   type="checkbox"
                                   checked={checked}
@@ -417,7 +417,7 @@ export default function IntakePanel({
                                       return next;
                                     });
                                   }}
-                                  className="h-4 w-4 accent-blue-600"
+                                  className="h-4 w-4 accent-accent"
                                 />
                                 この行を登録する
                               </label>
@@ -426,12 +426,12 @@ export default function IntakePanel({
                                   .filter(([k]) => row[k] !== undefined || ["date", "title", "name", "content", "item", "org", "datetime"].includes(k))
                                   .map(([k, label]) => (
                                     <label key={k} className="block">
-                                      <span className="text-[11px] text-neutral-400">{label}</span>
+                                      <span className="text-[11px] text-faint">{label}</span>
                                       <input
                                         value={row[k] ?? ""}
                                         onChange={(e) => updateCell(table, i, k, e.target.value)}
                                         disabled={!checked}
-                                        className="mt-0.5 w-full rounded-lg border border-neutral-200 bg-white px-2 py-1 text-[13px] text-neutral-800 focus:border-blue-500 focus:outline-none disabled:bg-neutral-100"
+                                        className="mt-0.5 w-full rounded-lg border border-line bg-surface px-2 py-1 text-[13px] text-body focus:border-accent focus:outline-none disabled:bg-wash"
                                       />
                                     </label>
                                   ))}
@@ -444,30 +444,30 @@ export default function IntakePanel({
                   ),
                 )}
               </div>
-              {error && <p className="mt-3 text-[13px] text-rose-600">{error}</p>}
+              {error && <p className="mt-3 text-[13px] text-alert">{error}</p>}
             </>
           )}
         </div>
 
         {/* フッター */}
         {phase !== "done" && (
-          <div className="flex items-center justify-between gap-3 border-t border-neutral-100 px-5 py-3.5">
+          <div className="flex items-center justify-between gap-3 border-t border-line px-5 py-3.5">
             {phase === "review" || phase === "saving" ? (
               <button
                 onClick={reset}
                 disabled={phase === "saving"}
-                className="text-[13px] font-medium text-neutral-500 hover:text-neutral-800 disabled:opacity-50"
+                className="text-[13px] font-medium text-mute hover:text-body disabled:opacity-50"
               >
                 ← 貼り付けからやり直す
               </button>
             ) : (
-              <span className="text-[12px] text-neutral-400">{text.length.toLocaleString()} 文字</span>
+              <span className="text-[12px] text-faint">{text.length.toLocaleString()} 文字</span>
             )}
             {phase === "input" || phase === "analyzing" ? (
               <button
                 onClick={analyze}
                 disabled={phase === "analyzing" || (text.trim() === "" && photos.length === 0)}
-                className="rounded-xl bg-blue-600 px-5 py-2.5 text-[13.5px] font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:opacity-50"
+                className="rounded-xl bg-accent px-5 py-2.5 text-[13.5px] font-semibold text-white shadow-sm transition-colors hover:bg-accent-deep disabled:opacity-50"
               >
                 {phase === "analyzing" ? "解析中…" : "解析する"}
               </button>
@@ -475,7 +475,7 @@ export default function IntakePanel({
               <button
                 onClick={save}
                 disabled={phase === "saving" || [...included].length === 0}
-                className="rounded-xl bg-blue-600 px-5 py-2.5 text-[13.5px] font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:opacity-50"
+                className="rounded-xl bg-accent px-5 py-2.5 text-[13.5px] font-semibold text-white shadow-sm transition-colors hover:bg-accent-deep disabled:opacity-50"
               >
                 {phase === "saving"
                   ? "保存中…"

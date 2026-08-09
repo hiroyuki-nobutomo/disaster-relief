@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>災害対応 情報管理アプリ 操作マニュアル</title>
+<style>
+  :root {
+    --paper: #f5f3ee;
+    --surface: #fffefc;
+    --ink: #1e2836;
+    --body: #3c4657;
+    --mute: #6d7889;
+    --faint: #9aa3b1;
+    --line: #e5e1d6;
+    --accent: #31567e;
+    --accent-soft: #e9eff5;
+    --warn-soft: #f7efdd;
+    --warn: #9c6f26;
+    --alert: #ad4531;
+    --alert-soft: #f8ebe6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  @page { size: A4; margin: 0; }
+  body {
+    font-family: "Noto Sans CJK JP", sans-serif;
+    color: var(--body);
+    font-size: 10.5pt;
+    line-height: 1.75;
+    font-feature-settings: "palt";
+  }
+  .page {
+    width: 210mm; height: 296mm;
+    padding: 16mm 18mm;
+    page-break-after: always;
+    position: relative;
+    background: #fff;
+    overflow: hidden;
+  }
+  .serif { font-family: "Noto Serif CJK JP", serif; letter-spacing: 0.05em; }
+
+  /* ── 表紙 ── */
+  .cover { background: var(--paper); display: flex; flex-direction: column; }
+  .cover .brand { color: var(--accent); font-size: 9pt; letter-spacing: 0.35em; font-weight: 700; }
+  .cover h1 { font-size: 26pt; color: var(--ink); font-weight: 700; margin-top: 10mm; line-height: 1.5; }
+  .cover .sub { font-size: 12pt; color: var(--mute); margin-top: 4mm; }
+  .cover .phone { margin: 12mm auto 0; width: 62mm; border: 1px solid var(--line); border-radius: 6mm; overflow: hidden; box-shadow: 0 6mm 12mm -8mm rgba(60,50,30,.45); }
+  .cover .phone img { width: 100%; display: block; }
+  .fillbox { margin-top: 10mm; border: 1px solid var(--line); border-radius: 3mm; background: var(--surface); padding: 6mm 8mm; }
+  .fillbox .row { display: flex; align-items: baseline; gap: 4mm; padding: 2.5mm 0; border-bottom: 1px dashed var(--line); }
+  .fillbox .row:last-child { border-bottom: none; }
+  .fillbox .label { width: 34mm; font-size: 9.5pt; color: var(--mute); font-weight: 700; }
+  .fillbox .blank { flex: 1; border-bottom: 1px solid var(--faint); height: 6mm; }
+  .cover .foot { margin-top: auto; font-size: 8.5pt; color: var(--faint); }
+
+  /* ── 本文共通 ── */
+  h2 { font-size: 15pt; color: var(--ink); font-weight: 700; border-bottom: 2px solid var(--accent); padding-bottom: 2mm; margin-bottom: 5mm; }
+  h2 .no { color: var(--accent); margin-right: 3mm; }
+  h3 { font-size: 11.5pt; color: var(--ink); margin: 5mm 0 2mm; }
+  p { margin-bottom: 2.5mm; }
+  .cols { display: flex; gap: 8mm; align-items: flex-start; }
+  .cols .txt { flex: 1; min-width: 0; }
+  .shot { width: 52mm; flex-shrink: 0; border: 1px solid var(--line); border-radius: 4mm; overflow: hidden; box-shadow: 0 3mm 8mm -6mm rgba(60,50,30,.5); }
+  .shot img { width: 100%; display: block; }
+  .shot .cap { font-size: 8pt; color: var(--faint); text-align: center; padding: 1.5mm 2mm; background: var(--paper); }
+  .step { display: flex; gap: 3.5mm; margin-bottom: 3mm; }
+  .step .n { flex-shrink: 0; width: 6.5mm; height: 6.5mm; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; font-size: 9.5pt; display: flex; align-items: center; justify-content: center; margin-top: 1mm; }
+  .step .b { flex: 1; }
+  .step .b b { color: var(--ink); }
+  .note { background: var(--warn-soft); border-radius: 2.5mm; padding: 3mm 5mm; font-size: 9.5pt; margin: 4mm 0; }
+  .note b { color: var(--warn); }
+  .alertbox { background: var(--alert-soft); border-radius: 2.5mm; padding: 3mm 5mm; font-size: 9.5pt; margin: 4mm 0; }
+  .alertbox b { color: var(--alert); }
+  .tips { background: var(--accent-soft); border-radius: 2.5mm; padding: 3mm 5mm; font-size: 9.5pt; margin: 4mm 0; }
+  .tips b { color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin: 3mm 0; }
+  th, td { border: 1px solid var(--line); padding: 2mm 3mm; text-align: left; vertical-align: top; }
+  th { background: var(--paper); color: var(--ink); font-weight: 700; white-space: nowrap; }
+  ul { padding-left: 5mm; margin-bottom: 2.5mm; }
+  li { margin-bottom: 1mm; }
+  .pill { display: inline-block; border-radius: 3mm; padding: 0 2.5mm; font-size: 8.5pt; font-weight: 700; }
+  .pill.red { background: var(--alert-soft); color: var(--alert); }
+  .pill.amber { background: var(--warn-soft); color: var(--warn); }
+  .pill.blue { background: var(--accent-soft); color: var(--accent); }
+  .pageno { position: absolute; bottom: 8mm; right: 18mm; font-size: 8.5pt; color: var(--faint); }
+  .header-mini { position: absolute; bottom: 8mm; left: 18mm; font-size: 8.5pt; color: var(--faint); }
+</style>
+</head>
+<body>
+
+<!-- ═══ 表紙 ═══ -->
+<section class="page cover">
+  <div class="brand">DISASTER RELIEF</div>
+  <h1 class="serif">災害対応 情報管理アプリ<br />操作マニュアル</h1>
+  <p class="sub">現地支援メンバー向け ── スマートフォンでの使い方</p>
+  <div class="phone"><img src="img/home.png" alt="ホーム画面" /></div>
+  <div class="fillbox">
+    <div class="row"><span class="label">アプリのURL</span><span class="blank"></span></div>
+    <div class="row"><span class="label">あなたの担当者ID</span><span class="blank"></span></div>
+    <div class="row"><span class="label">パスワード</span><span class="blank"></span></div>
+  </div>
+  <p class="foot">このマニュアルは配布時点の画面です。実際の表示と多少異なる場合があります。</p>
+</section>
+
+<!-- ═══ 1. できること・ログイン ═══ -->
+<section class="page">
+  <h2 class="serif"><span class="no">1</span>このアプリでできること</h2>
+  <p>災害対応の現地支援に必要な情報を、チーム全員でひとつの場所に集めて共有するアプリです。スマートフォンのブラウザで使えます（アプリのインストールは不要）。</p>
+  <table>
+    <tr><th>ホーム</th><td>いまの状況・タイムライン・次にやるべきことがひと目でわかる</td></tr>
+    <tr><th>名簿</th><td>メンバーの連絡先。タップで電話・メールを発信できる</td></tr>
+    <tr><th>予定</th><td>全体・班・自分のスケジュールと、ホテル・移動の予約</td></tr>
+    <tr><th>物資</th><td>避難所からの支援要請と、支援品目（ロット）の発送・到着状況</td></tr>
+    <tr><th>現地</th><td>避難所・拠点の情報（地図リンク付き）と関係機関の連絡先</td></tr>
+    <tr><th>記録</th><td>ヒアリング内容・決定事項・申し送りの時系列記録</td></tr>
+  </table>
+
+  <h2 class="serif" style="margin-top:8mm"><span class="no">2</span>ログインする</h2>
+  <div class="cols">
+    <div class="txt">
+      <div class="step"><span class="n">1</span><div class="b">スマートフォンのブラウザ（Safari・Chrome など）で、<b>表紙に記入したURL</b>を開きます。</div></div>
+      <div class="step"><span class="n">2</span><div class="b"><b>担当者ID</b>（例: M-01）と<b>パスワード</b>を入力して「ログイン」を押します。</div></div>
+      <div class="step"><span class="n">3</span><div class="b">ログインは<b>3日間</b>有効です。期限が切れたら同じ手順で入り直してください。</div></div>
+      <div class="tips"><b>ホーム画面に追加しておくと便利:</b> ブラウザの共有メニューから「ホーム画面に追加」を選ぶと、アプリのように1タップで開けます。</div>
+      <div class="note"><b>パスワードを忘れたら:</b> 本部の管理担当者に連絡してください（再設定します）。</div>
+    </div>
+    <figure class="shot"><img src="img/login.png" alt="ログイン画面" /><figcaption class="cap">ログイン画面</figcaption></figure>
+  </div>
+  <div class="header-mini">災害対応 情報管理アプリ 操作マニュアル</div>
+  <div class="pageno">1</div>
+</section>
+
+<!-- ═══ 3. ホーム ═══ -->
+<section class="page">
+  <h2 class="serif"><span class="no">3</span>ホーム画面の見かた</h2>
+  <div class="cols">
+    <div class="txt">
+      <h3>① いまの状況（上部のチップ）</h3>
+      <p><span class="pill red">未対応の要請</span> <span class="pill amber">手配・輸送中の物資</span> <span class="pill blue">開設避難所</span> などが1行で表示されます。<b>タップすると該当ページに移動</b>します。赤=至急対応、黄=進行中、緑=問題なし、の色分けです。</p>
+      <h3>② タイムライン</h3>
+      <p>赤い「<b>いま</b>」の線を境に、<b>上へスクロールするとこれからの予定</b>、<b>下へスクロールするとこれまでの実績</b>（記録・物資の発送/到着・要請の受付）が時系列で見られます。行をタップすると詳細ページへ移動します。</p>
+      <h3>③ ネクストアクション</h3>
+      <p>「次にやるべきこと」が優先順に自動で並びます（未対応の要請 → 物資の到着確認 → 直近の予定 → 未共有の下書き）。こちらも行をタップで詳細へ。</p>
+      <div class="tips"><b>迷ったらホームに戻る:</b> 画面下のタブ（PC では左のメニュー）でいつでも切り替えられます。</div>
+    </div>
+    <figure class="shot"><img src="img/home.png" alt="ホーム画面" /><figcaption class="cap">ホーム</figcaption></figure>
+  </div>
+  <div class="header-mini">災害対応 情報管理アプリ 操作マニュアル</div>
+  <div class="pageno">2</div>
+</section>
+
+<!-- ═══ 4. 名簿・予定 ═══ -->
+<section class="page">
+  <h2 class="serif"><span class="no">4</span>名簿・予定</h2>
+  <div class="cols">
+    <div class="txt">
+      <h3>名簿</h3>
+      <ul>
+        <li>班（グループ）ごとの体制と、メンバー全員の連絡先が見られます</li>
+        <li><b>電話番号・メールをタップ</b>すると、そのまま発信・メール作成ができます</li>
+        <li>「予定を見る ›」で、その人のスケジュールに移動できます</li>
+      </ul>
+      <h3>予定</h3>
+      <ul>
+        <li>ログインすると、まず<b>自分のスケジュール</b>が表示されます（全体の予定＋自分の班の予定＋自分個人の予定＋自分のホテル・移動の予約が、日付ごとにまとまって見えます）</li>
+        <li>右上の「表示対象」で、全体一覧や他のメンバーの表示に切り替えられます</li>
+        <li>上の「スケジュール｜予約」で、ホテル・飛行機などの予約一覧にも切り替えられます</li>
+      </ul>
+      <div class="note"><b>予定の追加は「取り込み」から:</b> 予約確認メールや連絡文を貼り付けるだけで登録できます（→ 6ページ）。</div>
+    </div>
+    <div>
+      <figure class="shot" style="margin-bottom:5mm"><img src="img/roster.png" alt="名簿" /><figcaption class="cap">名簿</figcaption></figure>
+    </div>
+  </div>
+  <div class="cols" style="margin-top:4mm">
+    <div class="txt"></div>
+    <figure class="shot"><img src="img/schedule.png" alt="予定" /><figcaption class="cap">予定（自分の表示）</figcaption></figure>
+  </div>
+  <div class="header-mini">災害対応 情報管理アプリ 操作マニュアル</div>
+  <div class="pageno">3</div>
+</section>
+
+<!-- ═══ 5. 物資・現地 ═══ -->
+<section class="page">
+  <h2 class="serif"><span class="no">5</span>物資・現地</h2>
+  <div class="cols">
+    <div class="txt">
+      <h3>物資</h3>
+      <ul>
+        <li><b>支援要請</b>: 避難所からの「〜が足りない」を受け付けた一覧。緊急度（高・中・低）と状態（受付・手配中・対応済）で色分けされます</li>
+        <li><b>品目</b>: 支援物資のロット単位の一覧。数量・送付元→送付先・発送/到着日・状態がわかります</li>
+        <li>要請と手配品目は「↳ 手配:」のリンクで<b>相互にたどれます</b></li>
+        <li>避難所名をタップすると、現地ページの該当避難所に移動します</li>
+      </ul>
+      <h3>現地</h3>
+      <ul>
+        <li><b>避難所・拠点</b>: 収容状況のバー・ニーズ・窓口電話がカードで見られます。「📍 地図を開く」でGoogleマップが開きます</li>
+        <li><b>連絡先</b>: 自治体・社協・医療・NPO などの関係機関。カテゴリで絞り込めます</li>
+      </ul>
+    </div>
+    <figure class="shot"><img src="img/supplies.png" alt="物資" /><figcaption class="cap">物資（支援要請）</figcaption></figure>
+  </div>
+  <div class="cols" style="margin-top:4mm">
+    <div class="txt"></div>
+    <figure class="shot"><img src="img/field.png" alt="現地" /><figcaption class="cap">現地（避難所）</figcaption></figure>
+  </div>
+  <div class="header-mini">災害対応 情報管理アプリ 操作マニュアル</div>
+  <div class="pageno">4</div>
+</section>
+
+<!-- ═══ 6. 記録 ═══ -->
+<section class="page">
+  <h2 class="serif"><span class="no">6</span>記録 ── ヒアリングや決定事項を残す</h2>
+  <div class="cols">
+    <div class="txt">
+      <p>現地で見聞きしたこと・決めたことを時系列で共有するページです。種別（ヒアリング／時系列／指示・決定／申し送り）で絞り込めます。</p>
+      <h3>公開範囲（だいじな仕組み）</h3>
+      <table>
+        <tr><th>共有</th><td>チーム全員が見られます（ふつうはこれ）</td></tr>
+        <tr><th>下書き</th><td><b>自分だけ</b>が見られます。内容を確かめてから「全体に共有する」ボタンで公開できます</td></tr>
+        <tr><th>プライベート</th><td><b>自分だけ</b>のメモ。他の人には一切表示されません</td></tr>
+      </table>
+      <p>下書き・プライベートは、他のメンバーの画面には<b>データ自体が送られない</b>ので、安心してメモに使えます。</p>
+      <div class="tips"><b>記録の登録も「取り込み」から:</b> ヒアリングメモや現地の写真を取り込むと、自動で記録の形に整理されます（→ 次ページ）。</div>
+    </div>
+    <figure class="shot"><img src="img/logs.png" alt="記録" /><figcaption class="cap">記録（タイムライン）</figcaption></figure>
+  </div>
+  <div class="header-mini">災害対応 情報管理アプリ 操作マニュアル</div>
+  <div class="pageno">5</div>
+</section>
+
+<!-- ═══ 7. 取り込み ═══ -->
+<section class="page">
+  <h2 class="serif"><span class="no">7</span>取り込み ── 貼り付け・写真でかんたん登録</h2>
+  <p>このアプリへの入力は、<b>画面右下の「取り込み」ボタン</b>からが基本です。手入力のフォームはありません。メールやメモを貼り付けるか、写真を撮るだけで、AIが内容を読み取って整理します。</p>
+  <div class="cols">
+    <div class="txt">
+      <div class="step"><span class="n">1</span><div class="b">右下の <b>「取り込み」</b> ボタンを押す。</div></div>
+      <div class="step"><span class="n">2</span><div class="b">受信した<b>メール・メッセージ・メモをそのまま貼り付ける</b>。または「📷 写真を追加」で、手書きの要請書・FAX・物資の送り状などを<b>撮影</b>する（両方同時でもOK）。</div></div>
+      <div class="step"><span class="n">3</span><div class="b"><b>「解析する」</b>を押すと、AIが内容を「名簿・予定・予約・物資・要請・避難所・連絡先・記録」に自動で仕分けます。</div></div>
+      <div class="step"><span class="n">4</span><div class="b"><b>内容を確認</b>する。間違いがあればその場で修正し、登録したくない行はチェックを外します。</div></div>
+      <div class="step"><span class="n">5</span><div class="b"><b>「シートへ保存」</b>を押して完了。データはすぐ全員の画面に反映されます。</div></div>
+      <div class="alertbox"><b>かならず確認してから保存:</b> AIの読み取りは間違うことがあります。特に<b>数量・日付・避難所名</b>は保存前に目で確認してください。</div>
+      <div class="note"><b>写真も一緒に保存されます:</b> 取り込んだ写真は縮小して記録に添付され、あとから原本を確認できます。</div>
+    </div>
+    <figure class="shot"><img src="img/intake.png" alt="取り込み" /><figcaption class="cap">取り込み画面</figcaption></figure>
+  </div>
+  <div class="header-mini">災害対応 情報管理アプリ 操作マニュアル</div>
+  <div class="pageno">6</div>
+</section>
+
+<!-- ═══ 8. 困ったとき ═══ -->
+<section class="page">
+  <h2 class="serif"><span class="no">8</span>困ったとき・おねがい</h2>
+  <table>
+    <tr><th style="width:52mm">画面が表示されない・古い</th><td>電波の良い場所で、ページを<b>下に引っぱって再読み込み</b>してください。それでも直らない場合はブラウザを一度閉じて開き直します。</td></tr>
+    <tr><th>ログインできない</th><td>担当者IDは「M-01」のような形式です。大文字・小文字やハイフンを確かめてください。パスワードを忘れた場合は本部の管理担当者へ。</td></tr>
+    <tr><th>間違えて保存してしまった</th><td>アプリからは削除できません。<b>本部の管理担当者に連絡</b>してください（元データを直接修正します）。</td></tr>
+    <tr><th>取り込みの解析が失敗する</th><td>文章が長すぎる場合は分けて貼り付けてください。写真はピントと明るさを確認して撮り直すと読み取りやすくなります。</td></tr>
+    <tr><th>データが増えて見つけにくい</th><td>ホームの状況チップ・タイムライン・ネクストアクションから、青い「›」リンクをたどるのが近道です。</td></tr>
+  </table>
+
+  <h3>おねがい（個人情報の取り扱い）</h3>
+  <ul>
+    <li>このアプリには被災者・関係者の<b>個人情報</b>が含まれます。画面の共有・スクリーンショットの転送は必要最小限にしてください</li>
+    <li>共用の端末では、使い終わったら<b>ログアウト</b>してください（画面右上の名前をタップ）</li>
+    <li>ID・パスワードをチーム外の人に教えないでください</li>
+  </ul>
+
+  <div class="fillbox" style="margin-top:8mm">
+    <div class="row"><span class="label">困ったときの連絡先</span><span class="blank"></span></div>
+    <div class="row"><span class="label">管理担当者</span><span class="blank"></span></div>
+  </div>
+  <div class="header-mini">災害対応 情報管理アプリ 操作マニュアル</div>
+  <div class="pageno">7</div>
+</section>
+
+</body>
+</html>

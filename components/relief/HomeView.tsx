@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import type { ReliefData } from "@/lib/relief/types";
 import { fmtDate, groupName, memberName, shelterName, splitDateTime } from "@/lib/relief/derive";
 import { Card, CardHeader, Empty, Pill } from "@/components/relief/ui";
@@ -207,6 +208,17 @@ export default function HomeView({ data }: { data: ReliefData }) {
   const future = futureItems(data);
   const past = pastItems(data);
 
+  // タイムラインの初期スクロール位置:「いま」の区切りを領域の中央に置く。
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const nowRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const c = scrollRef.current;
+    const m = nowRef.current;
+    if (c && m) {
+      c.scrollTop = m.offsetTop - (c.clientHeight - m.clientHeight) / 2;
+    }
+  }, [data]);
+
   const chips: { label: string; tone: PillTone }[] = [
     {
       label: highReq.length > 0 ? `未対応の要請 ${openReq.length}件（高 ${highReq.length}）` : `未対応の要請 ${openReq.length}件`,
@@ -254,34 +266,46 @@ export default function HomeView({ data }: { data: ReliefData }) {
         )}
       </Card>
 
-      {/* 3. タイムライン（上=これから / いま / 下=これまで） */}
+      {/* 3. タイムライン（上=これから / いま / 下=これまで）。
+             カード内の固定高スクロール領域にし、初期表示は「いま」を中央に置く */}
       <Card>
-        <CardHeader title="タイムライン" right={<span className="text-[12px] text-faint">上: 予定 ／ 下: 実績</span>} />
-        <div className="px-4 pb-4 sm:px-5">
+        <CardHeader
+          title="タイムライン"
+          right={<span className="text-[12px] text-faint">上へ: 予定 ／ 下へ: 実績</span>}
+        />
+        <div className="relative">
           {future.length === 0 && past.length === 0 ? (
             <Empty>まだ予定も実績もありません。「取り込み」から登録できます。</Empty>
           ) : (
             <>
-              {/* これから（近い順に上から。今に近いものが「いま」の直上に来るよう逆順表示） */}
-              <ol>
-                {[...future].reverse().map((item) => (
-                  <TimelineRow key={item.key} item={item} />
-                ))}
-              </ol>
-              {/* いま */}
-              <div className="my-1 flex items-center gap-3" aria-label="現在">
-                <span className="h-px flex-1 bg-alert/30" />
-                <span className="rounded-full bg-alert-soft px-3 py-1 text-[11.5px] font-bold text-alert ring-1 ring-alert/30 ring-inset">
-                  いま（{fmtDate(today)}）
-                </span>
-                <span className="h-px flex-1 bg-alert/30" />
+              <div
+                ref={scrollRef}
+                className="relative max-h-[58dvh] overflow-y-auto overscroll-contain px-4 pt-2 pb-4 sm:px-5 lg:max-h-[34rem]"
+              >
+                {/* これから（近い順に上から。今に近いものが「いま」の直上に来るよう逆順表示） */}
+                <ol>
+                  {[...future].reverse().map((item) => (
+                    <TimelineRow key={item.key} item={item} />
+                  ))}
+                </ol>
+                {/* いま（初期スクロール位置の基準） */}
+                <div ref={nowRef} className="my-1 flex items-center gap-3" aria-label="現在">
+                  <span className="h-px flex-1 bg-alert/30" />
+                  <span className="rounded-full bg-alert-soft px-3 py-1 text-[11.5px] font-bold text-alert ring-1 ring-alert/30 ring-inset">
+                    いま（{fmtDate(today)}）
+                  </span>
+                  <span className="h-px flex-1 bg-alert/30" />
+                </div>
+                {/* これまで（新しい順） */}
+                <ol className="pt-3">
+                  {past.map((item) => (
+                    <TimelineRow key={item.key} item={item} dim />
+                  ))}
+                </ol>
               </div>
-              {/* これまで（新しい順） */}
-              <ol className="pt-3">
-                {past.map((item) => (
-                  <TimelineRow key={item.key} item={item} dim />
-                ))}
-              </ol>
+              {/* 上下端のフェード（スクロールできることを示す） */}
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-8 rounded-b-none bg-gradient-to-b from-surface to-transparent" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 rounded-b-2xl bg-gradient-to-t from-surface to-transparent" />
             </>
           )}
         </div>

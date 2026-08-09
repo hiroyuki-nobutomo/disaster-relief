@@ -2,11 +2,8 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { PAL } from "@/lib/palette";
 
-const TOOL_NAME = "プロジェクト・マネジメント ダッシュボード";
-
-/** ID（例: AI-BCP / ASC）＋パスワードでログインし、該当プロジェクトの画面へ遷移する。 */
+/** 担当者ID（例: M-01）＋パスワードでログインする。 */
 export default function LoginForm() {
   const router = useRouter();
   const search = useSearchParams();
@@ -30,7 +27,6 @@ export default function LoginForm() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data?.ok) {
-        // セッション Cookie 反映後に目的ページへ。
         router.replace(next.startsWith("/") ? next : "/");
         router.refresh();
       } else {
@@ -43,31 +39,21 @@ export default function LoginForm() {
     }
   }
 
-  const field = {
-    border: `1px solid ${PAL.border}`,
-    color: PAL.ink,
-  };
-
   return (
-    <div
-      style={{ background: PAL.tint, color: PAL.body }}
-      className="flex min-h-screen items-center justify-center p-6"
-    >
-      <div className="card w-full max-w-sm p-7">
-        <div style={{ color: PAL.slateLt }} className="mb-1 text-xs">
-          {TOOL_NAME}
-        </div>
-        <h1 style={{ color: PAL.ink }} className="mb-1 text-lg font-bold tracking-tight">
-          ログイン
+    <div className="flex min-h-dvh items-center justify-center bg-[#f4f5f7] p-6">
+      <div className="w-full max-w-sm rounded-2xl border border-black/[0.06] bg-white p-7 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_36px_-20px_rgba(16,24,40,0.25)]">
+        <p className="text-[11px] font-semibold tracking-widest text-blue-600">DISASTER RELIEF</p>
+        <h1 className="mt-1 text-lg font-bold tracking-tight text-neutral-900">
+          災害対応 情報管理
         </h1>
-        <p style={{ color: PAL.slate }} className="mb-5 text-sm">
-          プロジェクトID とパスワードを入力してください。
+        <p className="mt-1 mb-6 text-[13px] text-neutral-500">
+          担当者ID とパスワードを入力してください。
         </p>
 
         <form onSubmit={submit} className="space-y-4">
           <div>
-            <label style={{ color: PAL.slate }} className="mb-1 block text-xs font-semibold">
-              プロジェクトID
+            <label className="mb-1 block text-[12px] font-semibold text-neutral-600">
+              担当者ID
             </label>
             <input
               type="text"
@@ -76,13 +62,12 @@ export default function LoginForm() {
               autoComplete="username"
               autoCapitalize="none"
               autoFocus
-              placeholder="例: AI-BCP"
-              style={field}
-              className="w-full rounded-md bg-white px-3 py-2 text-sm"
+              placeholder="例: M-01"
+              className="w-full rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-[14px] text-neutral-900 placeholder:text-neutral-300 focus:border-blue-500 focus:outline-none"
             />
           </div>
           <div>
-            <label style={{ color: PAL.slate }} className="mb-1 block text-xs font-semibold">
+            <label className="mb-1 block text-[12px] font-semibold text-neutral-600">
               パスワード
             </label>
             <input
@@ -90,22 +75,16 @@ export default function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
-              style={field}
-              className="w-full rounded-md bg-white px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-[14px] text-neutral-900 focus:border-blue-500 focus:outline-none"
             />
           </div>
 
-          {error && (
-            <div style={{ color: "#b42318" }} className="text-xs font-medium">
-              {error}
-            </div>
-          )}
+          {error && <p className="text-[12.5px] font-medium text-rose-600">{error}</p>}
 
           <button
             type="submit"
             disabled={busy}
-            style={{ background: PAL.brand, color: "#fff", opacity: busy ? 0.6 : 1 }}
-            className="w-full rounded-md py-2 text-sm font-semibold"
+            className="w-full rounded-xl bg-blue-600 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-60"
           >
             {busy ? "確認中…" : "ログイン"}
           </button>

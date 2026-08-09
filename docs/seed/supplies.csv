@@ -1,0 +1,2 @@
+id,lot_no,item,category,qty,unit,from,to_shelter_id,status,ship_date,arrive_date,request_id,note
+SP-001,LOT-2026-0815-01,飲料水 500ml,水・飲料,1200,本,静岡県庁,SH-01,到着,2026-08-15,2026-08-17,R-001,

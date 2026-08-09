@@ -1,11 +1,12 @@
-import OverviewView from "@/components/OverviewView";
-import { getDashboardData } from "@/lib/sheets";
+import ReliefApp from "@/components/relief/ReliefApp";
+import { getReliefData } from "@/lib/relief/sheets";
+import { currentMember } from "@/lib/relief/auth-server";
 
-// Sheets を開いている人の編集が概ね 1 分以内に反映されるよう、60 秒で再検証（HANDOFF §6）。
-// マルチテナント時は getDashboardData が Cookie を参照するため、Next が自動的に動的描画へ切替える。
-export const revalidate = 60;
+// ログイン中の担当者（Cookie）に応じて logs のフィルタと個人出し分けが変わるため動的描画。
+export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const data = await getDashboardData();
-  return <OverviewView data={data} />;
+  const member = await currentMember();
+  const data = await getReliefData(member);
+  return <ReliefApp initial={data} />;
 }

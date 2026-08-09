@@ -1,30 +1,5 @@
 @import "tailwindcss";
 
-/* ── デザイントークン（単一情報源）────────────────────────────────────────
- * 色は Tailwind v4 の @theme に集約し、:root の CSS 変数として配布する。
- * - Tailwind ユーティリティ（text-brand / bg-tint / border-border 等）が生える
- * - lib/palette.ts の PAL は同じ変数（var(--color-*)）を参照する＝二重管理を避ける
- * 値を変えたい時はここだけ直す。
- */
-@theme {
-  --color-brand: #1a7ec4;
-  --color-brand-lt: #a8d4ee;
-  --color-pale: #eaf4fb;
-  --color-ink: #202020;
-  --color-body: #333333;
-  --color-slate: #5a6b7b;
-  --color-slate-lt: #8b9bab;
-  --color-surface: #ffffff;
-  --color-tint: #f7fafc;
-  --color-tint2: #f0f4f8;
-  --color-border: #e0e6ec;
-  --color-border-lt: #eaeef2;
-  --color-red: #c00000;
-  --color-today-band: #f7dada;
-  --color-gold: #d9954f;
-  --color-green: #5da070;
-}
-
 :root {
   color-scheme: light;
 }
@@ -40,14 +15,4 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: 0.01em;
-}
-
-/* 共通カード（白基調・極薄罫線・柔らかい陰影・大きめ角丸） */
-.card {
-  background: #ffffff;
-  border: 1px solid rgba(20, 30, 50, 0.06);
-  border-radius: 16px;
-  box-shadow:
-    0 1px 2px rgba(16, 24, 40, 0.04),
-    0 12px 28px -16px rgba(16, 24, 40, 0.16);
 }

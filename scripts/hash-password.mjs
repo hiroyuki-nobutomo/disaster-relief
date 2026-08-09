@@ -1,10 +1,10 @@
-// プロジェクトのパスワードハッシュを生成する補助スクリプト。
-// PROJECTS 環境変数に入れる passwordHash の値をこれで作る。
+// 担当者パスワードのハッシュを生成する補助スクリプト。
+// members タブの password 列（J列）に入れる値をこれで作る（平文でも動くが、ハッシュ推奨）。
 //
 // 使い方:
 //   AUTH_SECRET="あなたの長いランダム文字列" node scripts/hash-password.mjs "設定したいパスワード"
 //
-// 出力された文字列を PROJECTS の passwordHash に貼り付ける。
+// 出力された文字列を members の password 列に貼り付ける。
 // 重要: 本番（Vercel）と同じ AUTH_SECRET で生成すること（鍵が違うとログインできない）。
 
 import { webcrypto as crypto } from "node:crypto";

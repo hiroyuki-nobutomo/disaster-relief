@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { SESSION_COOKIE } from "@/lib/projects";
+import { SESSION_COOKIE } from "@/lib/relief/auth";
 
 // ログアウト: セッション Cookie を破棄する。
 export const dynamic = "force-dynamic";

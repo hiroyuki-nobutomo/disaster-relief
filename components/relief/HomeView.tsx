@@ -8,7 +8,7 @@ import type { PillTone } from "@/components/relief/ui";
 import type { NavTarget, Navigate } from "@/lib/relief/nav";
 
 // ホーム: 「今どうなっているか」「次に何を為すべきか」を端的に示す画面。
-//  1. いまの状況 — 1行のコンパクトな状況チップ
+//  1. 状況チップ — 1行のコンパクトな概況（タイトルなし）
 //  2. タイムライン — 上=これからの予定 /「いま」区切り / 下=これまでの実績（新しい順）
 //  3. ネクストアクション — データから導出するアクションキュー（緊急度順）
 
@@ -262,10 +262,9 @@ export default function HomeView({ data, navigate }: { data: ReliefData; navigat
 
   return (
     <div className="space-y-4">
-      {/* 1. いまの状況 */}
+      {/* 1. 状況チップ（タイトルは置かず、チップだけで端的に示す） */}
       <Card className="px-4 py-3 sm:px-5">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="font-display mr-1 text-[13px] font-bold text-ink">いまの状況</span>
           {chips.map((c) => (
             <Pill key={c.label} tone={c.tone}>
               {c.label}

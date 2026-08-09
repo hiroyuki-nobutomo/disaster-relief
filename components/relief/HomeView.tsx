@@ -273,31 +273,47 @@ export default function HomeView({ data, navigate }: { data: ReliefData; navigat
     }
   }, [data]);
 
-  const chips: { label: string; tone: PillTone }[] = [
+  // 状況チップ。タップで関連タブへジャンプする（最初の未対応要請があればそこへフォーカス）。
+  const chips: { label: string; tone: PillTone; nav: NavTarget }[] = [
     {
       label:
         highReq.length > 0
           ? `未対応の要請 ${openReq.length}件（高 ${highReq.length}）`
           : `未対応の要請 ${openReq.length}件`,
       tone: highReq.length > 0 ? "red" : openReq.length > 0 ? "amber" : "green",
+      nav: { tab: "supplies", seg: "requests", focusId: (highReq[0] ?? openReq[0])?.id },
     },
-    { label: `手配・輸送中の物資 ${moving.length}件`, tone: moving.length > 0 ? "amber" : "green" },
+    {
+      label: `手配・輸送中の物資 ${moving.length}件`,
+      tone: moving.length > 0 ? "amber" : "green",
+      nav: { tab: "supplies", seg: "supplies", focusId: moving[0]?.id },
+    },
     {
       label: `開設避難所 ${shelters.length}・避難者 約${evacuees.toLocaleString()}名`,
       tone: "blue",
+      nav: { tab: "field", seg: "shelters" },
     },
-    { label: `本日の予定 ${todayLeft}件`, tone: "gray" },
+    {
+      label: `本日の予定 ${todayLeft}件`,
+      tone: "gray",
+      nav: { tab: "schedule", seg: "schedule" },
+    },
   ];
 
   return (
     <div className="space-y-4">
-      {/* 1. 状況チップ（タイトルは置かず、チップだけで端的に示す） */}
+      {/* 1. 状況チップ（タイトルは置かず、チップだけで端的に示す。タップで該当タブへ） */}
       <Card className="px-4 py-3 sm:px-5">
         <div className="flex flex-wrap items-center gap-1.5">
           {chips.map((c) => (
-            <Pill key={c.label} tone={c.tone}>
-              {c.label}
-            </Pill>
+            <button
+              key={c.label}
+              onClick={() => navigate(c.nav)}
+              title="該当タブで見る"
+              className="transition-transform hover:scale-[1.03] active:scale-95"
+            >
+              <Pill tone={c.tone}>{c.label} ›</Pill>
+            </button>
           ))}
         </div>
       </Card>

@@ -61,7 +61,8 @@ const v = (r: Rec, k: string): string => String(r[k] ?? "").trim();
 
 function requireDate(r: Rec, k: string, label: string): string | { error: string } {
   const d = v(r, k);
-  if (!isValidDate(d)) return { error: `${label}は YYYY-MM-DD 形式で指定してください（受領: ${d || "空"}）。` };
+  if (!isValidDate(d))
+    return { error: `${label}は YYYY-MM-DD 形式で指定してください（受領: ${d || "空"}）。` };
   return d;
 }
 
@@ -128,7 +129,16 @@ export const RELIEF_TABLES: Record<ReliefTable, TableDef> = {
       }
       return {
         ok: true,
-        cells: [date, start, end, scope, scope === "全体" ? "" : targetId, title, v(r, "place"), v(r, "note")],
+        cells: [
+          date,
+          start,
+          end,
+          scope,
+          scope === "全体" ? "" : targetId,
+          title,
+          v(r, "place"),
+          v(r, "note"),
+        ],
       };
     },
   },
@@ -150,7 +160,12 @@ export const RELIEF_TABLES: Record<ReliefTable, TableDef> = {
         ok: true,
         cells: [
           memberId,
-          pick(r, "type", ["ホテル", "飛行機", "新幹線", "レンタカー", "その他"] as const, "その他"),
+          pick(
+            r,
+            "type",
+            ["ホテル", "飛行機", "新幹線", "レンタカー", "その他"] as const,
+            "その他",
+          ),
           sd,
           ed,
           name,
@@ -449,7 +464,10 @@ export async function appendReliefRows(table: ReliefTable, records: Rec[]): Prom
   const sheets = sheetsClient("write");
 
   try {
-    const res = await sheets.spreadsheets.values.get({ spreadsheetId: sid, range: `${table}!A2:A` });
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: sid,
+      range: `${table}!A2:A`,
+    });
     const ids = (res.data.values ?? []).map((r) => String(r?.[0] ?? "").trim());
     let n = nextIdNumber(ids, def.idPrefix);
     const newIds: string[] = [];

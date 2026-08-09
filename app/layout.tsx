@@ -31,10 +31,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="ja"
-      className={`${inter.variable} ${notoSansJP.variable} ${zenOldMincho.variable}`}
-    >
+    <html lang="ja" className={`${inter.variable} ${notoSansJP.variable} ${zenOldMincho.variable}`}>
       <body>{children}</body>
     </html>
   );

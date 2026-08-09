@@ -19,9 +19,16 @@ export async function PATCH(req: Request) {
   const id = typeof body.id === "string" ? body.id : "";
   const visibility = typeof body.visibility === "string" ? body.visibility : "";
   if (!id || !["共有", "下書き", "プライベート"].includes(visibility)) {
-    return Response.json({ error: "id と公開範囲（共有/下書き/プライベート）を指定してください。" }, { status: 400 });
+    return Response.json(
+      { error: "id と公開範囲（共有/下書き/プライベート）を指定してください。" },
+      { status: 400 },
+    );
   }
-  const r = await updateLogVisibility(id, visibility as "共有" | "下書き" | "プライベート", member.id);
+  const r = await updateLogVisibility(
+    id,
+    visibility as "共有" | "下書き" | "プライベート",
+    member.id,
+  );
   if (!r.ok) return Response.json({ error: r.error }, { status: 400 });
   return Response.json({ ok: true });
 }

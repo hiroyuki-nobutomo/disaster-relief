@@ -141,16 +141,16 @@ export default function ScheduleView({
               <Card key={date}>
                 <CardHeader
                   title={fmtDate(date)}
-                  right={
-                    date === data.basisDate ? (
-                      <Pill tone="red">今日</Pill>
-                    ) : undefined
-                  }
+                  right={date === data.basisDate ? <Pill tone="red">今日</Pill> : undefined}
                 />
                 <ul className="divide-y divide-line px-4 pb-2 sm:px-5">
                   {list.map((e) => (
-                    <li key={e.id} id={`rec-${e.id}`} className="flex items-baseline gap-3 px-1 py-2.5">
-                      <span className="w-24 shrink-0 text-[13px] font-semibold tabular-nums text-ink">
+                    <li
+                      key={e.id}
+                      id={`rec-${e.id}`}
+                      className="flex items-baseline gap-3 px-1 py-2.5"
+                    >
+                      <span className="w-24 shrink-0 text-[13px] font-semibold text-ink tabular-nums">
                         {e.start ? `${e.start}${e.end ? `–${e.end}` : ""}` : "終日"}
                       </span>
                       <div className="min-w-0 flex-1">
@@ -186,7 +186,9 @@ export default function ScheduleView({
         <Card>
           <CardHeader title="予約一覧" count={sortedBookings.length} />
           {sortedBookings.length === 0 ? (
-            <Empty>予約が登録されていません。予約確認メールを「取り込み」に貼り付けると登録できます。</Empty>
+            <Empty>
+              予約が登録されていません。予約確認メールを「取り込み」に貼り付けると登録できます。
+            </Empty>
           ) : (
             <ul className="divide-y divide-line px-4 pb-2 sm:px-5">
               {sortedBookings.map((b) => (
@@ -194,9 +196,11 @@ export default function ScheduleView({
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span className="text-[15px]">{BOOKING_ICON[b.type]}</span>
                     <RefLink onClick={() => navigate({ tab: "roster", focusId: b.memberId })}>
-                      <span className="text-[14px] font-semibold">{memberName(data, b.memberId)}</span>
+                      <span className="text-[14px] font-semibold">
+                        {memberName(data, b.memberId)}
+                      </span>
                     </RefLink>
-                    <span className="text-[13px] tabular-nums text-mute">
+                    <span className="text-[13px] text-mute tabular-nums">
                       {fmtDate(b.startDate)}
                       {b.endDate && b.endDate !== b.startDate ? ` 〜 ${fmtDate(b.endDate)}` : ""}
                     </span>

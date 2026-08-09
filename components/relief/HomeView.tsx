@@ -21,12 +21,16 @@ function deriveActions(data: ReliefData): Action[] {
 
   // 1) 未着手（受付のまま）の支援要請 — 緊急度高を先に
   const open = data.requests.filter((r) => r.status === "受付");
-  for (const r of [...open].sort((a, b) => (a.urgency === "高" ? -1 : 1) - (b.urgency === "高" ? -1 : 1))) {
+  for (const r of [...open].sort(
+    (a, b) => (a.urgency === "高" ? -1 : 1) - (b.urgency === "高" ? -1 : 1),
+  )) {
     actions.push({
       tone: r.urgency === "高" ? "red" : "amber",
       tag: `要請・${r.urgency}`,
       text: `「${r.content}」の手配を始める`,
-      sub: [shelterName(data, r.shelterId), r.qty, `${fmtDate(r.date)}受付`].filter(Boolean).join("・"),
+      sub: [shelterName(data, r.shelterId), r.qty, `${fmtDate(r.date)}受付`]
+        .filter(Boolean)
+        .join("・"),
       nav: { tab: "supplies", seg: "requests", focusId: r.id },
     });
   }
@@ -56,14 +60,19 @@ function deriveActions(data: ReliefData): Action[] {
       tone: "blue",
       tag: "予定",
       text: e.title,
-      sub: [e.start ? `${e.start}${e.end ? `–${e.end}` : ""}` : "終日", e.place].filter(Boolean).join("・"),
+      sub: [e.start ? `${e.start}${e.end ? `–${e.end}` : ""}` : "終日", e.place]
+        .filter(Boolean)
+        .join("・"),
       nav: { tab: "schedule", seg: "schedule", focusId: e.id },
     });
   }
 
   // 4) 自分の未共有の下書き（ログイン時のみ届いている）
   for (const l of data.logs) {
-    if (l.visibility === "下書き" && (!data.currentMemberId || l.authorId === data.currentMemberId)) {
+    if (
+      l.visibility === "下書き" &&
+      (!data.currentMemberId || l.authorId === data.currentMemberId)
+    ) {
       actions.push({
         tone: "gray",
         tag: "下書き",
@@ -93,17 +102,27 @@ function futureItems(data: ReliefData): TimelineItem[] {
   const today = data.basisDate;
   return data.schedule
     .filter((e) => e.date >= today)
-    .sort((a, b) => (a.date === b.date ? (a.start ?? "").localeCompare(b.start ?? "") : a.date.localeCompare(b.date)))
+    .sort((a, b) =>
+      a.date === b.date
+        ? (a.start ?? "").localeCompare(b.start ?? "")
+        : a.date.localeCompare(b.date),
+    )
     .slice(0, 30)
     .map((e) => ({
       key: `sc-${e.id}`,
       date: e.date,
       time: e.start,
       tag:
-        e.scope === "全体" ? "全体" : e.scope === "グループ" ? groupName(data, e.targetId) : memberName(data, e.targetId),
+        e.scope === "全体"
+          ? "全体"
+          : e.scope === "グループ"
+            ? groupName(data, e.targetId)
+            : memberName(data, e.targetId),
       tone: e.scope === "全体" ? "blue" : e.scope === "グループ" ? "green" : "gray",
       title: e.title,
-      sub: [e.start ? `${e.start}${e.end ? `–${e.end}` : ""}` : "終日", e.place].filter(Boolean).join("・"),
+      sub: [e.start ? `${e.start}${e.end ? `–${e.end}` : ""}` : "終日", e.place]
+        .filter(Boolean)
+        .join("・"),
       nav: { tab: "schedule", seg: "schedule", focusId: e.id },
     }));
 }
@@ -122,7 +141,9 @@ function pastItems(data: ReliefData): TimelineItem[] {
       tag: l.kind,
       tone: l.kind === "指示・決定" ? "red" : l.kind === "ヒアリング" ? "blue" : "gray",
       title: l.visibility === "共有" ? l.title : `${l.title}（${l.visibility}）`,
-      sub: [l.reporter, l.shelterId && `@${shelterName(data, l.shelterId)}`].filter(Boolean).join("・"),
+      sub: [l.reporter, l.shelterId && `@${shelterName(data, l.shelterId)}`]
+        .filter(Boolean)
+        .join("・"),
       nav: { tab: "logs", focusId: l.id },
     });
   }
@@ -179,7 +200,9 @@ function pastItems(data: ReliefData): TimelineItem[] {
 
   return items
     .filter((x) => x.date !== "" && x.date <= today)
-    .sort((a, b) => (a.date === b.date ? (b.time ?? "").localeCompare(a.time ?? "") : b.date.localeCompare(a.date)))
+    .sort((a, b) =>
+      a.date === b.date ? (b.time ?? "").localeCompare(a.time ?? "") : b.date.localeCompare(a.date),
+    )
     .slice(0, 50);
 }
 
@@ -195,10 +218,10 @@ function TimelineRow({
   return (
     <li className={`relative flex gap-3.5 ${dim ? "opacity-80" : ""}`}>
       <div className="flex w-[4.2rem] shrink-0 flex-col items-end pt-0.5">
-        <span className="text-[12px] font-semibold tabular-nums text-mute">
+        <span className="text-[12px] font-semibold text-mute tabular-nums">
           {fmtDate(item.date)}
         </span>
-        {item.time && <span className="text-[11px] tabular-nums text-faint">{item.time}</span>}
+        {item.time && <span className="text-[11px] text-faint tabular-nums">{item.time}</span>}
       </div>
       <div className="flex flex-col items-center">
         <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-line" />
@@ -252,11 +275,17 @@ export default function HomeView({ data, navigate }: { data: ReliefData; navigat
 
   const chips: { label: string; tone: PillTone }[] = [
     {
-      label: highReq.length > 0 ? `未対応の要請 ${openReq.length}件（高 ${highReq.length}）` : `未対応の要請 ${openReq.length}件`,
+      label:
+        highReq.length > 0
+          ? `未対応の要請 ${openReq.length}件（高 ${highReq.length}）`
+          : `未対応の要請 ${openReq.length}件`,
       tone: highReq.length > 0 ? "red" : openReq.length > 0 ? "amber" : "green",
     },
     { label: `手配・輸送中の物資 ${moving.length}件`, tone: moving.length > 0 ? "amber" : "green" },
-    { label: `開設避難所 ${shelters.length}・避難者 約${evacuees.toLocaleString()}名`, tone: "blue" },
+    {
+      label: `開設避難所 ${shelters.length}・避難者 約${evacuees.toLocaleString()}名`,
+      tone: "blue",
+    },
     { label: `本日の予定 ${todayLeft}件`, tone: "gray" },
   ];
 

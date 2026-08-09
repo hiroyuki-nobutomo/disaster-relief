@@ -8,8 +8,8 @@ import type { sheets_v4 } from "googleapis";
 export function hasSheetsCreds(): boolean {
   return Boolean(
     process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
-      process.env.GOOGLE_PRIVATE_KEY &&
-      process.env.SHEET_ID,
+    process.env.GOOGLE_PRIVATE_KEY &&
+    process.env.SHEET_ID,
   );
 }
 

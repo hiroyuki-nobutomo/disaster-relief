@@ -26,7 +26,10 @@ async function readMemberAuthRow(
       range: "members!A2:J",
     });
     const row = (r.data.values ?? []).find(
-      (x) => String(x?.[0] ?? "").trim().toLowerCase() === memberId.trim().toLowerCase(),
+      (x) =>
+        String(x?.[0] ?? "")
+          .trim()
+          .toLowerCase() === memberId.trim().toLowerCase(),
     );
     if (!row) return null;
     return { name: String(row[1] ?? "").trim(), password: String(row[9] ?? "").trim() };

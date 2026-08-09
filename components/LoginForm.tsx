@@ -43,18 +43,12 @@ export default function LoginForm() {
     <div className="flex min-h-dvh items-center justify-center bg-paper p-6">
       <div className="w-full max-w-sm rounded-2xl border border-line bg-surface p-7 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_36px_-20px_rgba(16,24,40,0.25)]">
         <p className="text-[11px] font-semibold tracking-widest text-accent">DISASTER RELIEF</p>
-        <h1 className="font-display mt-1.5 text-xl font-bold text-ink">
-          災害対応 情報管理
-        </h1>
-        <p className="mt-1 mb-6 text-[13px] text-mute">
-          担当者ID とパスワードを入力してください。
-        </p>
+        <h1 className="font-display mt-1.5 text-xl font-bold text-ink">災害対応 情報管理</h1>
+        <p className="mt-1 mb-6 text-[13px] text-mute">担当者ID とパスワードを入力してください。</p>
 
         <form onSubmit={submit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-[12px] font-semibold text-body">
-              担当者ID
-            </label>
+            <label className="mb-1 block text-[12px] font-semibold text-body">担当者ID</label>
             <input
               type="text"
               value={id}
@@ -67,9 +61,7 @@ export default function LoginForm() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-[12px] font-semibold text-body">
-              パスワード
-            </label>
+            <label className="mb-1 block text-[12px] font-semibold text-body">パスワード</label>
             <input
               type="password"
               value={password}

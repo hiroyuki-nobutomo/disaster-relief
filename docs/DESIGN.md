@@ -26,19 +26,19 @@ components/relief/*（タブUI・取り込みパネル）＝表示のみ。業�
 
 シート名・列は英語、値は日本語。1行目はヘッダー（読み書きとも A2 起点）。
 
-| タブ | 列（A→） | 備考 |
-|---|---|---|
-| `meta` | key, value | `disaster_name`（災害名）, `hq`（現地本部） |
-| `members` | id, name, kana, org, role, group_id, phone, email, note, **password** | id=`M-01`…。password 列は**ログイン照合専用**で API から画面へは返さない。平文か `scripts/hash-password.mjs` の出力 |
-| `groups` | id, name, mission, leader_id, note | id=`G-1`… |
-| `schedule` | id, date, start, end, scope, target_id, title, place, note | id=`SC-001`…。scope=全体/グループ/個人。target_id は scope に応じ groups.id / members.id |
-| `bookings` | id, member_id, type, start_date, end_date, name, detail, conf_no, status, note | id=`B-001`…。type=ホテル/飛行機/新幹線/レンタカー/その他。status=予約済/仮予約/キャンセル |
-| `supplies` | id, lot_no, item, category, qty, unit, from, to_shelter_id, status, ship_date, arrive_date, request_id, note | id=`SP-001`…。status=手配中/輸送中/到着/配布済 |
-| `requests` | id, date, shelter_id, content, qty, urgency, status, note | id=`R-001`…。urgency=高/中/低。status=受付/手配中/対応済 |
-| `shelters` | id, name, type, address, map_url, contact_name, phone, capacity, current, needs, status, note | id=`SH-01`…。status=開設/閉鎖。map_url 空なら名称＋住所で地図検索リンクを生成 |
-| `contacts` | id, org, name, role, category, phone, email, shelter_id, note | id=`C-01`…。category=自治体/政府/社協/医療/NPO/物流/その他 |
-| `logs` | id, datetime, kind, reporter, shelter_id, title, content, tags, source, **visibility**, **author_id**, created_at | id=`L-001`…。kind=ヒアリング/時系列/指示・決定/申し送り。visibility=共有/下書き/プライベート |
-| `images` | id, ref_ids, mime, seq, data, created_at | id=`IMG-001`…。取り込み時の元写真（圧縮JPEG）。base64 をセル上限内（4万字）で分割し seq 順に複数行保存。ref_ids は紐づくレコードID（カンマ区切り・接頭辞で表を判別） |
+| タブ       | 列（A→）                                                                                                          | 備考                                                                                                                                                                 |
+| ---------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `meta`     | key, value                                                                                                        | `disaster_name`（災害名）, `hq`（現地本部）                                                                                                                          |
+| `members`  | id, name, kana, org, role, group_id, phone, email, note, **password**                                             | id=`M-01`…。password 列は**ログイン照合専用**で API から画面へは返さない。平文か `scripts/hash-password.mjs` の出力                                                  |
+| `groups`   | id, name, mission, leader_id, note                                                                                | id=`G-1`…                                                                                                                                                            |
+| `schedule` | id, date, start, end, scope, target_id, title, place, note                                                        | id=`SC-001`…。scope=全体/グループ/個人。target_id は scope に応じ groups.id / members.id                                                                             |
+| `bookings` | id, member_id, type, start_date, end_date, name, detail, conf_no, status, note                                    | id=`B-001`…。type=ホテル/飛行機/新幹線/レンタカー/その他。status=予約済/仮予約/キャンセル                                                                            |
+| `supplies` | id, lot_no, item, category, qty, unit, from, to_shelter_id, status, ship_date, arrive_date, request_id, note      | id=`SP-001`…。status=手配中/輸送中/到着/配布済                                                                                                                       |
+| `requests` | id, date, shelter_id, content, qty, urgency, status, note                                                         | id=`R-001`…。urgency=高/中/低。status=受付/手配中/対応済                                                                                                             |
+| `shelters` | id, name, type, address, map_url, contact_name, phone, capacity, current, needs, status, note                     | id=`SH-01`…。status=開設/閉鎖。map_url 空なら名称＋住所で地図検索リンクを生成                                                                                        |
+| `contacts` | id, org, name, role, category, phone, email, shelter_id, note                                                     | id=`C-01`…。category=自治体/政府/社協/医療/NPO/物流/その他                                                                                                           |
+| `logs`     | id, datetime, kind, reporter, shelter_id, title, content, tags, source, **visibility**, **author_id**, created_at | id=`L-001`…。kind=ヒアリング/時系列/指示・決定/申し送り。visibility=共有/下書き/プライベート                                                                         |
+| `images`   | id, ref_ids, mime, seq, data, created_at                                                                          | id=`IMG-001`…。取り込み時の元写真（圧縮JPEG）。base64 をセル上限内（4万字）で分割し seq 順に複数行保存。ref_ids は紐づくレコードID（カンマ区切り・接頭辞で表を判別） |
 
 ### シート間の連携（外部キー）
 

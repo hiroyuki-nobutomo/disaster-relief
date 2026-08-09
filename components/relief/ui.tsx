@@ -113,7 +113,9 @@ export function Segmented<T extends string>({
           }`}
         >
           {o.label}
-          {o.count !== undefined && <span className="ml-1.5 text-[11.5px] text-faint">{o.count}</span>}
+          {o.count !== undefined && (
+            <span className="ml-1.5 text-[11.5px] text-faint">{o.count}</span>
+          )}
         </button>
       ))}
     </div>
@@ -146,7 +148,9 @@ export function Chip({
 
 /** 空状態。 */
 export function Empty({ children }: { children: ReactNode }) {
-  return <p className="px-5 py-10 text-center text-[13px] leading-relaxed text-faint">{children}</p>;
+  return (
+    <p className="px-5 py-10 text-center text-[13px] leading-relaxed text-faint">{children}</p>
+  );
 }
 
 /** ラベル＋値（詳細行）。値が空なら描画しない。 */
@@ -216,7 +220,10 @@ export function Tel({ phone }: { phone?: string }) {
 export function Mail({ email }: { email?: string }) {
   if (!email) return null;
   return (
-    <a href={`mailto:${email}`} className="break-all text-accent underline-offset-2 hover:underline">
+    <a
+      href={`mailto:${email}`}
+      className="break-all text-accent underline-offset-2 hover:underline"
+    >
       {email}
     </a>
   );

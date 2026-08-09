@@ -22,9 +22,7 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
   {
     key: "home",
     label: "ホーム",
-    icon: (
-      <path d="M3 10.5 12 3l9 7.5M5 9.5V21h5v-6h4v6h5V9.5" />
-    ),
+    icon: <path d="M3 10.5 12 3l9 7.5M5 9.5V21h5v-6h4v6h5V9.5" />,
   },
   {
     key: "roster",
@@ -49,9 +47,7 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
   {
     key: "supplies",
     label: "物資",
-    icon: (
-      <path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3ZM3.3 7.6 12 12m0 0 8.7-4.4M12 12v8.8" />
-    ),
+    icon: <path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3ZM3.3 7.6 12 12m0 0 8.7-4.4M12 12v8.8" />,
   },
   {
     key: "field",
@@ -172,7 +168,9 @@ export default function ReliefApp({ initial }: { initial: ReliefData }) {
             </div>
           )}
           <p className="text-[11px] leading-relaxed text-faint">
-            {data.source === "seed" ? "サンプルデータ表示中（Sheets 未接続）" : "データ: Google Sheets"}
+            {data.source === "seed"
+              ? "サンプルデータ表示中（Sheets 未接続）"
+              : "データ: Google Sheets"}
           </p>
         </div>
       </aside>
@@ -224,7 +222,17 @@ export default function ReliefApp({ initial }: { initial: ReliefData }) {
         onClick={() => setIntakeOpen(true)}
         className="fixed right-4 bottom-20 z-40 flex items-center gap-2 rounded-full bg-accent px-4 py-3 text-[13.5px] font-semibold text-white shadow-[0_8px_24px_-6px_rgba(49,86,126,0.5)] transition-transform hover:scale-[1.03] active:scale-95 lg:right-8 lg:bottom-8"
       >
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <svg
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
           <rect x="8" y="2.5" width="8" height="4" rx="1" />
           <path d="M16 4.5h2a2 2 0 0 1 2 2V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2h2M12 10.5v7M8.5 14H15.5" />
         </svg>

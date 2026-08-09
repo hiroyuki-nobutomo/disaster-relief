@@ -101,11 +101,15 @@ export default function LogsView({
                 </div>
                 <div className="min-w-0 flex-1 pb-5">
                   <div className="flex flex-wrap items-center gap-2 pt-0.5">
-                    <span className="text-[12.5px] font-semibold tabular-nums text-mute">
+                    <span className="text-[12.5px] font-semibold text-mute tabular-nums">
                       {fmtDate(date)}
                       {time ? ` ${time}` : ""}
                     </span>
-                    <Pill tone={l.kind === "指示・決定" ? "red" : l.kind === "ヒアリング" ? "blue" : "gray"}>
+                    <Pill
+                      tone={
+                        l.kind === "指示・決定" ? "red" : l.kind === "ヒアリング" ? "blue" : "gray"
+                      }
+                    >
                       {l.kind}
                     </Pill>
                     {l.visibility !== "共有" && (

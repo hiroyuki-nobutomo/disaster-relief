@@ -4,7 +4,16 @@ import { useState } from "react";
 import type { ReliefData } from "@/lib/relief/types";
 import type { NavTarget, Navigate } from "@/lib/relief/nav";
 import { memberName } from "@/lib/relief/derive";
-import { Card, CardHeader, Chip, Empty, Mail, RefLink, Tel, useFocusFlash } from "@/components/relief/ui";
+import {
+  Card,
+  CardHeader,
+  Chip,
+  Empty,
+  Mail,
+  RefLink,
+  Tel,
+  useFocusFlash,
+} from "@/components/relief/ui";
 
 // 名簿: グループの帯 → 担当者カード（連絡先はタップで発信/メール）。
 // 各担当者から「予定を見る」で予定タブへ、グループのリーダー名から本人へジャンプできる。
@@ -49,9 +58,7 @@ export default function RosterView({
               {g.leaderId && (
                 <p className="mt-1 text-[12px] text-faint">
                   リーダー:{" "}
-                  <RefLink
-                    onClick={() => navigate({ tab: "roster", focusId: g.leaderId })}
-                  >
+                  <RefLink onClick={() => navigate({ tab: "roster", focusId: g.leaderId })}>
                     {memberName(data, g.leaderId)}
                   </RefLink>
                 </p>
@@ -71,11 +78,7 @@ export default function RosterView({
                 すべて
               </Chip>
               {data.groups.map((g) => (
-                <Chip
-                  key={g.id}
-                  active={groupFilter === g.id}
-                  onClick={() => setGroupFilter(g.id)}
-                >
+                <Chip key={g.id} active={groupFilter === g.id} onClick={() => setGroupFilter(g.id)}>
                   {g.name}
                 </Chip>
               ))}
@@ -98,9 +101,7 @@ export default function RosterView({
                     </span>
                   )}
                   <RefLink
-                    onClick={() =>
-                      navigate({ tab: "schedule", seg: "schedule", memberId: m.id })
-                    }
+                    onClick={() => navigate({ tab: "schedule", seg: "schedule", memberId: m.id })}
                   >
                     予定を見る
                   </RefLink>

@@ -33,14 +33,14 @@ npm run dev                        # http://localhost:3000
 
 `.env.local` の値:
 
-| 変数 | 内容 |
-|---|---|
-| `SHEET_ID` | Sheet の URL の `/d/` と `/edit` の間の文字列 |
-| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | サービスアカウントのメール |
-| `GOOGLE_PRIVATE_KEY` | JSON の `private_key` の値（改行含めそのまま） |
-| `ANTHROPIC_API_KEY` | 貼り付け取り込みの解析（Claude）に必要 |
-| `ANTHROPIC_MODEL` | 省略可（既定 `claude-sonnet-4-6`） |
-| `AUTH_SECRET` | 担当者ログインを有効にする場合のみ。長いランダム文字列 |
+| 変数                           | 内容                                                   |
+| ------------------------------ | ------------------------------------------------------ |
+| `SHEET_ID`                     | Sheet の URL の `/d/` と `/edit` の間の文字列          |
+| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | サービスアカウントのメール                             |
+| `GOOGLE_PRIVATE_KEY`           | JSON の `private_key` の値（改行含めそのまま）         |
+| `ANTHROPIC_API_KEY`            | 貼り付け取り込みの解析（Claude）に必要                 |
+| `ANTHROPIC_MODEL`              | 省略可（既定 `claude-sonnet-4-6`）                     |
+| `AUTH_SECRET`                  | 担当者ログインを有効にする場合のみ。長いランダム文字列 |
 
 環境変数なしでも起動でき、その場合は熊本想定のサンプルデータが表示される（保存は不可）。
 

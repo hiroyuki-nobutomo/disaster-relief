@@ -201,7 +201,8 @@ const extractTool: Anthropic.Tool = {
             visibility: {
               type: "string",
               enum: ["共有", "下書き", "プライベート"],
-              description: "公開範囲。基本は「共有」。本人しか見ない個人メモの明示がある場合のみ他を選ぶ",
+              description:
+                "公開範囲。基本は「共有」。本人しか見ない個人メモの明示がある場合のみ他を選ぶ",
             },
           },
           required: ["datetime", "kind", "title"],
@@ -226,7 +227,8 @@ function todayKeyJST(): string {
 async function referenceContext(): Promise<string> {
   try {
     const d = await getReliefData();
-    if (d.source === "seed") return "（Sheets 未接続のため既存一覧なし。ID 参照はすべて空にすること）";
+    if (d.source === "seed")
+      return "（Sheets 未接続のため既存一覧なし。ID 参照はすべて空にすること）";
     const lines: string[] = [];
     lines.push(
       "既存の担当者（members.id | 氏名 | 所属）:",
@@ -236,7 +238,9 @@ async function referenceContext(): Promise<string> {
       "既存の避難所・拠点（shelters.id | 名称）:",
       ...d.shelters.map((s) => `${s.id} | ${s.name}`),
       "未対応の支援要請（requests.id | 内容 | 状態）:",
-      ...d.requests.filter((r) => r.status !== "対応済").map((r) => `${r.id} | ${r.content} | ${r.status}`),
+      ...d.requests
+        .filter((r) => r.status !== "対応済")
+        .map((r) => `${r.id} | ${r.content} | ${r.status}`),
     );
     return lines.join("\n");
   } catch {
@@ -247,7 +251,9 @@ async function referenceContext(): Promise<string> {
 const TABLE_KEYS = Object.keys(RELIEF_TABLES) as ReliefTable[];
 
 /** クライアントからの画像入力を検証・正規化する（data URL 接頭辞は剥がす）。 */
-function parseImages(raw: unknown): { ok: true; images: ImageInput[] } | { ok: false; error: string } {
+function parseImages(
+  raw: unknown,
+): { ok: true; images: ImageInput[] } | { ok: false; error: string } {
   const arr = Array.isArray(raw) ? raw : [];
   if (arr.length > 5) return { ok: false, error: "画像は一度に5枚までです。" };
   const images: ImageInput[] = [];
@@ -268,7 +274,10 @@ function parseImages(raw: unknown): { ok: true; images: ImageInput[] } | { ok: f
 async function analyze(text: string, imagesRaw: unknown): Promise<Response> {
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json(
-      { error: "（準備中）取り込み解析はまだ有効化されていません。ANTHROPIC_API_KEY を設定してください。" },
+      {
+        error:
+          "（準備中）取り込み解析はまだ有効化されていません。ANTHROPIC_API_KEY を設定してください。",
+      },
       { status: 503 },
     );
   }
@@ -277,7 +286,10 @@ async function analyze(text: string, imagesRaw: unknown): Promise<Response> {
   if (!pi.ok) return Response.json({ error: pi.error }, { status: 400 });
   const images = pi.images;
   if (!t && images.length === 0) {
-    return Response.json({ error: "テキストを貼り付けるか、写真を追加してください。" }, { status: 400 });
+    return Response.json(
+      { error: "テキストを貼り付けるか、写真を追加してください。" },
+      { status: 400 },
+    );
   }
   if (t.length > 50_000) {
     return Response.json(

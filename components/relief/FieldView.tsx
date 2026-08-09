@@ -91,39 +91,39 @@ export default function FieldView({
             {data.shelters.map((sh) => (
               <Card key={sh.id} className="px-4 py-4 sm:px-5">
                 <div id={`rec-${sh.id}`} className="px-1">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h3 className="text-[15px] font-semibold text-ink">{sh.name}</h3>
-                    <p className="text-[12px] text-faint">
-                      {[sh.id, sh.type].filter(Boolean).join("・")}
-                    </p>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h3 className="text-[15px] font-semibold text-ink">{sh.name}</h3>
+                      <p className="text-[12px] text-faint">
+                        {[sh.id, sh.type].filter(Boolean).join("・")}
+                      </p>
+                    </div>
+                    <Pill tone={statusTone(sh.status)}>{sh.status}</Pill>
                   </div>
-                  <Pill tone={statusTone(sh.status)}>{sh.status}</Pill>
-                </div>
-                <Occupancy capacity={sh.capacity} current={sh.current} />
-                <dl className="mt-2.5 space-y-1">
-                  <Field label="住所" value={sh.address} />
-                  <Field label="窓口" value={sh.contactName} />
-                  <Field label="電話" value={<Tel phone={sh.phone} />} />
-                  <Field label="ニーズ" value={sh.needs} />
-                  <Field label="備考" value={sh.note} />
-                </dl>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <a
-                    href={shelterMapUrl(sh)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 rounded-lg border border-line px-3 py-1.5 text-[12.5px] font-medium text-body transition-colors hover:border-faint hover:bg-paper"
-                  >
-                    📍 地図を開く
-                  </a>
-                  <button
-                    onClick={() => navigate({ tab: "supplies", seg: "requests" })}
-                    className="inline-flex items-center gap-1 rounded-lg border border-line px-3 py-1.5 text-[12.5px] font-medium text-body transition-colors hover:border-faint hover:bg-paper"
-                  >
-                    📦 要請・物資を見る ›
-                  </button>
-                </div>
+                  <Occupancy capacity={sh.capacity} current={sh.current} />
+                  <dl className="mt-2.5 space-y-1">
+                    <Field label="住所" value={sh.address} />
+                    <Field label="窓口" value={sh.contactName} />
+                    <Field label="電話" value={<Tel phone={sh.phone} />} />
+                    <Field label="ニーズ" value={sh.needs} />
+                    <Field label="備考" value={sh.note} />
+                  </dl>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <a
+                      href={shelterMapUrl(sh)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 rounded-lg border border-line px-3 py-1.5 text-[12.5px] font-medium text-body transition-colors hover:border-faint hover:bg-paper"
+                    >
+                      📍 地図を開く
+                    </a>
+                    <button
+                      onClick={() => navigate({ tab: "supplies", seg: "requests" })}
+                      className="inline-flex items-center gap-1 rounded-lg border border-line px-3 py-1.5 text-[12.5px] font-medium text-body transition-colors hover:border-faint hover:bg-paper"
+                    >
+                      📦 要請・物資を見る ›
+                    </button>
+                  </div>
                 </div>
               </Card>
             ))}

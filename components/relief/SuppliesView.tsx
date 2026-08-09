@@ -155,7 +155,11 @@ export default function SuppliesView({
                               ・
                               <RefLink
                                 onClick={() =>
-                                  navigate({ tab: "supplies", seg: "requests", focusId: s.requestId })
+                                  navigate({
+                                    tab: "supplies",
+                                    seg: "requests",
+                                    focusId: s.requestId,
+                                  })
                                 }
                               >
                                 要請 {s.requestId}
@@ -164,7 +168,7 @@ export default function SuppliesView({
                           )}
                         </p>
                       </td>
-                      <td className="border-b border-line py-2.5 pr-4 tabular-nums text-body">
+                      <td className="border-b border-line py-2.5 pr-4 text-body tabular-nums">
                         {s.qty}
                         {s.unit}
                       </td>
@@ -185,7 +189,7 @@ export default function SuppliesView({
                           "—"
                         )}
                       </td>
-                      <td className="border-b border-line py-2.5 pr-4 tabular-nums text-mute">
+                      <td className="border-b border-line py-2.5 pr-4 text-mute tabular-nums">
                         {[s.shipDate && fmtDate(s.shipDate), s.arriveDate && fmtDate(s.arriveDate)]
                           .filter(Boolean)
                           .join(" / ") || "—"}

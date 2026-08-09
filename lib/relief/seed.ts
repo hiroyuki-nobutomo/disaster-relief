@@ -2,11 +2,23 @@ import type { ReliefData } from "@/lib/relief/types";
 
 // Google Sheets 未接続時に表示するサンプルデータ（熊本での現地支援を想定した架空の内容）。
 // シート構成・ID 連携（docs/DESIGN.md）のリファレンス実装を兼ねる。
+// 日付は「今日（JST）」を基準にした相対値で生成し、いつ開いてもデモが成立するようにする。
+
+/** 今日から offset 日ずらした日付（JST・YYYY-MM-DD）。 */
+function day(offset: number): string {
+  const d = new Date(Date.now() + offset * 24 * 60 * 60 * 1000);
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
 
 export const RELIEF_SEED: ReliefData = {
   disasterName: "熊本地震 現地支援（サンプル）",
   hq: "熊本市中央区・現地支援本部",
-  basisDate: "2026-08-18",
+  basisDate: day(0),
   members: [
     {
       id: "M-01",
@@ -66,7 +78,7 @@ export const RELIEF_SEED: ReliefData = {
   schedule: [
     {
       id: "SC-001",
-      date: "2026-08-18",
+      date: day(0),
       start: "09:00",
       end: "09:30",
       scope: "全体",
@@ -75,7 +87,7 @@ export const RELIEF_SEED: ReliefData = {
     },
     {
       id: "SC-002",
-      date: "2026-08-18",
+      date: day(0),
       start: "10:00",
       end: "12:00",
       scope: "グループ",
@@ -85,7 +97,7 @@ export const RELIEF_SEED: ReliefData = {
     },
     {
       id: "SC-003",
-      date: "2026-08-18",
+      date: day(0),
       start: "14:00",
       end: "15:00",
       scope: "グループ",
@@ -95,7 +107,7 @@ export const RELIEF_SEED: ReliefData = {
     },
     {
       id: "SC-004",
-      date: "2026-08-18",
+      date: day(0),
       start: "16:00",
       end: "17:00",
       scope: "個人",
@@ -105,7 +117,7 @@ export const RELIEF_SEED: ReliefData = {
     },
     {
       id: "SC-005",
-      date: "2026-08-19",
+      date: day(1),
       start: "09:00",
       end: "09:30",
       scope: "全体",
@@ -114,7 +126,7 @@ export const RELIEF_SEED: ReliefData = {
     },
     {
       id: "SC-006",
-      date: "2026-08-19",
+      date: day(1),
       start: "10:30",
       end: "12:00",
       scope: "グループ",
@@ -124,7 +136,7 @@ export const RELIEF_SEED: ReliefData = {
     },
     {
       id: "SC-007",
-      date: "2026-08-20",
+      date: day(2),
       start: "18:00",
       end: "19:00",
       scope: "全体",
@@ -137,7 +149,7 @@ export const RELIEF_SEED: ReliefData = {
       id: "B-001",
       memberId: "M-01",
       type: "飛行機",
-      startDate: "2026-08-17",
+      startDate: day(-1),
       name: "ANA 641（羽田→熊本）",
       detail: "15:30発 / 17:25着",
       confNo: "ANA-123456",
@@ -147,8 +159,8 @@ export const RELIEF_SEED: ReliefData = {
       id: "B-002",
       memberId: "M-01",
       type: "ホテル",
-      startDate: "2026-08-17",
-      endDate: "2026-08-21",
+      startDate: day(-1),
+      endDate: day(3),
       name: "ホテル熊本サンプル",
       detail: "シングル・朝食付",
       confNo: "HTL-98765",
@@ -158,7 +170,7 @@ export const RELIEF_SEED: ReliefData = {
       id: "B-003",
       memberId: "M-03",
       type: "新幹線",
-      startDate: "2026-08-17",
+      startDate: day(-1),
       name: "のぞみ25号→さくら405号（静岡→熊本）",
       detail: "09:12発 / 14:02着",
       status: "予約済",
@@ -167,8 +179,8 @@ export const RELIEF_SEED: ReliefData = {
       id: "B-004",
       memberId: "M-05",
       type: "レンタカー",
-      startDate: "2026-08-18",
-      endDate: "2026-08-21",
+      startDate: day(0),
+      endDate: day(3),
       name: "サンプルレンタカー熊本空港店",
       detail: "バン（物資輸送用）",
       confNo: "RC-2468",
@@ -186,8 +198,8 @@ export const RELIEF_SEED: ReliefData = {
       from: "静岡県庁",
       toShelterId: "SH-01",
       status: "到着",
-      shipDate: "2026-08-15",
-      arriveDate: "2026-08-17",
+      shipDate: day(-3),
+      arriveDate: day(-1),
       requestId: "R-001",
     },
     {
@@ -200,7 +212,7 @@ export const RELIEF_SEED: ReliefData = {
       from: "支援企業A",
       toShelterId: "SH-01",
       status: "輸送中",
-      shipDate: "2026-08-17",
+      shipDate: day(-1),
       requestId: "R-002",
     },
     {
@@ -224,14 +236,14 @@ export const RELIEF_SEED: ReliefData = {
       from: "静岡県庁",
       toShelterId: "SH-03",
       status: "輸送中",
-      shipDate: "2026-08-18",
+      shipDate: day(0),
       requestId: "R-003",
     },
   ],
   requests: [
     {
       id: "R-001",
-      date: "2026-08-14",
+      date: day(-4),
       shelterId: "SH-01",
       content: "飲料水が不足。500ml ペットボトル希望",
       qty: "1000本以上",
@@ -240,7 +252,7 @@ export const RELIEF_SEED: ReliefData = {
     },
     {
       id: "R-002",
-      date: "2026-08-15",
+      date: day(-3),
       shelterId: "SH-01",
       content: "仮設トイレ・簡易トイレの追加",
       qty: "200個",
@@ -249,7 +261,7 @@ export const RELIEF_SEED: ReliefData = {
     },
     {
       id: "R-003",
-      date: "2026-08-16",
+      date: day(-2),
       shelterId: "SH-03",
       content: "非常食（アレルギー対応含む）",
       qty: "2000食",
@@ -258,7 +270,7 @@ export const RELIEF_SEED: ReliefData = {
     },
     {
       id: "R-004",
-      date: "2026-08-17",
+      date: day(-1),
       shelterId: "SH-02",
       content: "乳幼児用ミルク・おむつ",
       urgency: "高",
@@ -347,7 +359,7 @@ export const RELIEF_SEED: ReliefData = {
   logs: [
     {
       id: "L-001",
-      datetime: "2026-08-17 18:30",
+      datetime: `${day(-1)} 18:30`,
       kind: "時系列",
       reporter: "佐藤 一郎",
       title: "先遣隊 熊本着。現地支援本部を設置",
@@ -357,7 +369,7 @@ export const RELIEF_SEED: ReliefData = {
     },
     {
       id: "L-002",
-      datetime: "2026-08-18 11:30",
+      datetime: `${day(0)} 11:30`,
       kind: "ヒアリング",
       reporter: "高橋 健",
       shelterId: "SH-01",
@@ -370,32 +382,32 @@ export const RELIEF_SEED: ReliefData = {
     },
     {
       id: "L-003",
-      datetime: "2026-08-18 15:00",
+      datetime: `${day(0)} 15:00`,
       kind: "指示・決定",
       reporter: "佐藤 一郎",
       title: "簡易トイレ200個の追加手配を決定",
-      content: "県物資調整会議にて。支援企業Aから直送、8/19着予定。",
+      content: "県物資調整会議にて。支援企業Aから直送、明日着予定。",
       shelterId: "SH-01",
       visibility: "共有",
       authorId: "M-01",
     },
     {
       id: "L-004",
-      datetime: "2026-08-18 17:45",
+      datetime: `${day(0)} 17:45`,
       kind: "申し送り",
       reporter: "田中 美咲",
       title: "取材対応の記録",
-      content: "地元紙より支援活動の取材。掲載は8/20朝刊予定。写真は本部前で撮影。",
+      content: "地元紙より支援活動の取材。掲載は明後日の朝刊予定。写真は本部前で撮影。",
       visibility: "共有",
       authorId: "M-04",
     },
     {
       id: "L-005",
-      datetime: "2026-08-18 19:10",
+      datetime: `${day(0)} 19:10`,
       kind: "ヒアリング",
       reporter: "田中 美咲",
       shelterId: "SH-02",
-      title: "（下書き）熊本市総合体育館の様子メモ",
+      title: "熊本市総合体育館の様子メモ",
       content: "乳幼児連れの世帯が増えている印象。ミルク・おむつの在庫を明日確認してから共有する。",
       visibility: "下書き",
       authorId: "M-04",

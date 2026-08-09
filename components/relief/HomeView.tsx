@@ -2,133 +2,289 @@
 
 import type { ReliefData } from "@/lib/relief/types";
 import { fmtDate, groupName, memberName, shelterName, splitDateTime } from "@/lib/relief/derive";
-import { Card, CardHeader, Empty, Pill, statusTone } from "@/components/relief/ui";
+import { Card, CardHeader, Empty, Pill } from "@/components/relief/ui";
+import type { PillTone } from "@/components/relief/ui";
 
-// ホーム: 今日の概況。数値タイル → 本日の予定 → 未対応の要請 → 最新の記録。
+// ホーム: 「今どうなっているか」「次に何を為すべきか」を端的に示す画面。
+//  1. いまの状況 — 1行のコンパクトな状況チップ
+//  2. 次に為すべきこと — データから導出するアクションキュー（緊急度順）
+//  3. タイムライン — 上=これからの予定 /「いま」区切り / 下=これまでの実績（新しい順）
 
-function Stat({ label, value, sub }: { label: string; value: number | string; sub?: string }) {
+type Action = { tone: PillTone; tag: string; text: string; sub?: string };
+
+/** 「次に為すべきこと」をデータから導出する（表示は最大8件・緊急度順）。 */
+function deriveActions(data: ReliefData): Action[] {
+  const today = data.basisDate;
+  const actions: Action[] = [];
+
+  // 1) 未着手（受付のまま）の支援要請 — 緊急度高を先に
+  const open = data.requests.filter((r) => r.status === "受付");
+  for (const r of [...open].sort((a, b) => (a.urgency === "高" ? -1 : 1) - (b.urgency === "高" ? -1 : 1))) {
+    actions.push({
+      tone: r.urgency === "高" ? "red" : "amber",
+      tag: `要請・${r.urgency}`,
+      text: `「${r.content}」の手配を始める`,
+      sub: [shelterName(data, r.shelterId), r.qty, `${fmtDate(r.date)}受付`].filter(Boolean).join("・"),
+    });
+  }
+
+  // 2) 到着予定日を迎えた輸送中の物資 — 到着確認
+  for (const s of data.supplies) {
+    if (s.status === "輸送中" && s.arriveDate && s.arriveDate <= today) {
+      actions.push({
+        tone: "amber",
+        tag: "物資",
+        text: `${s.item} の到着を確認する`,
+        sub: [shelterName(data, s.toShelterId), s.arriveDate && `${fmtDate(s.arriveDate)}着予定`]
+          .filter(Boolean)
+          .join("・"),
+      });
+    }
+  }
+
+  // 3) 本日のこれからの予定（直近2件）
+  const upcoming = data.schedule
+    .filter((e) => e.date === today)
+    .sort((a, b) => (a.start ?? "").localeCompare(b.start ?? ""))
+    .slice(0, 2);
+  for (const e of upcoming) {
+    actions.push({
+      tone: "blue",
+      tag: "予定",
+      text: e.title,
+      sub: [e.start ? `${e.start}${e.end ? `–${e.end}` : ""}` : "終日", e.place].filter(Boolean).join("・"),
+    });
+  }
+
+  // 4) 自分の未共有の下書き（ログイン時のみ届いている）
+  for (const l of data.logs) {
+    if (l.visibility === "下書き" && (!data.currentMemberId || l.authorId === data.currentMemberId)) {
+      actions.push({
+        tone: "gray",
+        tag: "下書き",
+        text: `「${l.title}」を確認して共有する`,
+        sub: l.reporter,
+      });
+    }
+  }
+
+  return actions.slice(0, 8);
+}
+
+type TimelineItem = {
+  key: string;
+  date: string; // YYYY-MM-DD
+  time?: string; // HH:MM
+  tag: string;
+  tone: PillTone;
+  title: string;
+  sub?: string;
+};
+
+/** これからの予定（今日以降・昇順）。 */
+function futureItems(data: ReliefData): TimelineItem[] {
+  const today = data.basisDate;
+  return data.schedule
+    .filter((e) => e.date >= today)
+    .sort((a, b) => (a.date === b.date ? (a.start ?? "").localeCompare(b.start ?? "") : a.date.localeCompare(b.date)))
+    .slice(0, 30)
+    .map((e) => ({
+      key: `sc-${e.id}`,
+      date: e.date,
+      time: e.start,
+      tag:
+        e.scope === "全体" ? "全体" : e.scope === "グループ" ? groupName(data, e.targetId) : memberName(data, e.targetId),
+      tone: e.scope === "全体" ? "blue" : e.scope === "グループ" ? "green" : "gray",
+      title: e.title,
+      sub: [e.start ? `${e.start}${e.end ? `–${e.end}` : ""}` : "終日", e.place].filter(Boolean).join("・"),
+    }));
+}
+
+/** これまでの実績（記録・物資の発送/到着・要請受付・過去の予定）。新しい順。 */
+function pastItems(data: ReliefData): TimelineItem[] {
+  const today = data.basisDate;
+  const items: TimelineItem[] = [];
+
+  for (const l of data.logs) {
+    const { date, time } = splitDateTime(l.datetime);
+    items.push({
+      key: `log-${l.id}`,
+      date,
+      time,
+      tag: l.kind,
+      tone: l.kind === "指示・決定" ? "red" : l.kind === "ヒアリング" ? "blue" : "gray",
+      title: l.visibility === "共有" ? l.title : `${l.title}（${l.visibility}）`,
+      sub: [l.reporter, l.shelterId && `@${shelterName(data, l.shelterId)}`].filter(Boolean).join("・"),
+    });
+  }
+  for (const s of data.supplies) {
+    if (s.shipDate) {
+      items.push({
+        key: `sp-ship-${s.id}`,
+        date: s.shipDate,
+        tag: "発送",
+        tone: "amber",
+        title: `${s.item} ${s.qty ?? ""}${s.unit ?? ""} を発送`,
+        sub: [s.from, "→", shelterName(data, s.toShelterId)].filter(Boolean).join(" "),
+      });
+    }
+    if (s.arriveDate && (s.status === "到着" || s.status === "配布済")) {
+      items.push({
+        key: `sp-arr-${s.id}`,
+        date: s.arriveDate,
+        tag: "到着",
+        tone: "green",
+        title: `${s.item} ${s.qty ?? ""}${s.unit ?? ""} が到着`,
+        sub: shelterName(data, s.toShelterId),
+      });
+    }
+  }
+  for (const r of data.requests) {
+    items.push({
+      key: `req-${r.id}`,
+      date: r.date,
+      tag: `要請受付・${r.urgency}`,
+      tone: r.urgency === "高" ? "red" : "amber",
+      title: r.content,
+      sub: [shelterName(data, r.shelterId), r.qty, `現在: ${r.status}`].filter(Boolean).join("・"),
+    });
+  }
+  // 過去の予定は「実施済み」として実績側に出す
+  for (const e of data.schedule) {
+    if (e.date < today) {
+      items.push({
+        key: `sc-past-${e.id}`,
+        date: e.date,
+        time: e.start,
+        tag: "実施",
+        tone: "gray",
+        title: e.title,
+        sub: e.place,
+      });
+    }
+  }
+
+  return items
+    .filter((x) => x.date !== "" && x.date <= today)
+    .sort((a, b) => (a.date === b.date ? (b.time ?? "").localeCompare(a.time ?? "") : b.date.localeCompare(a.date)))
+    .slice(0, 50);
+}
+
+function TimelineRow({ item, dim }: { item: TimelineItem; dim?: boolean }) {
   return (
-    <Card className="px-4 py-3.5 sm:px-5">
-      <p className="text-[12px] font-medium text-neutral-400">{label}</p>
-      <p className="mt-1 text-2xl font-bold tracking-tight text-neutral-900">
-        {value}
-        {sub && <span className="ml-1 text-[13px] font-medium text-neutral-400">{sub}</span>}
-      </p>
-    </Card>
+    <li className={`relative flex gap-3.5 ${dim ? "opacity-80" : ""}`}>
+      <div className="flex w-[4.2rem] shrink-0 flex-col items-end pt-0.5">
+        <span className="text-[12px] font-semibold tabular-nums text-neutral-500">
+          {fmtDate(item.date)}
+        </span>
+        {item.time && <span className="text-[11px] tabular-nums text-neutral-400">{item.time}</span>}
+      </div>
+      <div className="flex flex-col items-center">
+        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-neutral-300" />
+        <span className="w-px flex-1 bg-neutral-200" />
+      </div>
+      <div className="min-w-0 flex-1 pb-4">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Pill tone={item.tone}>{item.tag}</Pill>
+          <p className="text-[13.5px] font-medium text-neutral-800">{item.title}</p>
+        </div>
+        {item.sub && <p className="mt-0.5 text-[12px] text-neutral-400">{item.sub}</p>}
+      </div>
+    </li>
   );
 }
 
 export default function HomeView({ data }: { data: ReliefData }) {
   const today = data.basisDate;
-  const todaySched = data.schedule
-    .filter((e) => e.date === today)
-    .sort((a, b) => (a.start ?? "").localeCompare(b.start ?? ""));
-  const openRequests = data.requests.filter((r) => r.status !== "対応済");
+  const openReq = data.requests.filter((r) => r.status !== "対応済");
+  const highReq = openReq.filter((r) => r.urgency === "高");
   const moving = data.supplies.filter((s) => s.status === "手配中" || s.status === "輸送中");
-  const recentLogs = [...data.logs]
-    .sort((a, b) => b.datetime.localeCompare(a.datetime))
-    .slice(0, 3);
+  const shelters = data.shelters.filter((s) => s.status === "開設");
+  const evacuees = shelters.reduce((n, s) => n + (Number(s.current) || 0), 0);
+  const todayLeft = data.schedule.filter((e) => e.date === today).length;
+
+  const actions = deriveActions(data);
+  const future = futureItems(data);
+  const past = pastItems(data);
+
+  const chips: { label: string; tone: PillTone }[] = [
+    {
+      label: highReq.length > 0 ? `未対応の要請 ${openReq.length}件（高 ${highReq.length}）` : `未対応の要請 ${openReq.length}件`,
+      tone: highReq.length > 0 ? "red" : openReq.length > 0 ? "amber" : "green",
+    },
+    { label: `手配・輸送中の物資 ${moving.length}件`, tone: moving.length > 0 ? "amber" : "green" },
+    { label: `開設避難所 ${shelters.length}・避難者 約${evacuees.toLocaleString()}名`, tone: "blue" },
+    { label: `本日の予定 ${todayLeft}件`, tone: "gray" },
+  ];
 
   return (
     <div className="space-y-4">
-      {/* 概況タイル */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="メンバー" value={data.members.length} sub="名" />
-        <Stat label="本日の予定" value={todaySched.length} sub="件" />
-        <Stat label="未対応の要請" value={openRequests.length} sub="件" />
-        <Stat label="手配・輸送中の物資" value={moving.length} sub="件" />
-      </div>
+      {/* 1. いまの状況 */}
+      <Card className="px-4 py-3 sm:px-5">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="mr-1 text-[12px] font-semibold text-neutral-500">いまの状況</span>
+          {chips.map((c) => (
+            <Pill key={c.label} tone={c.tone}>
+              {c.label}
+            </Pill>
+          ))}
+        </div>
+      </Card>
 
-      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-        {/* 本日の予定 */}
-        <Card>
-          <CardHeader title={`本日の予定 ${fmtDate(today)}`} count={todaySched.length} />
-          {todaySched.length === 0 ? (
-            <Empty>本日の予定はありません。</Empty>
-          ) : (
-            <ul className="divide-y divide-neutral-100 px-4 pb-2 sm:px-5">
-              {todaySched.map((e) => (
-                <li key={e.id} className="flex items-baseline gap-3 py-2.5">
-                  <span className="w-24 shrink-0 text-[13px] font-semibold tabular-nums text-neutral-900">
-                    {e.start ? `${e.start}${e.end ? `–${e.end}` : ""}` : "終日"}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[13.5px] font-medium text-neutral-800">{e.title}</p>
-                    <p className="text-[12px] text-neutral-400">
-                      {[
-                        e.scope === "全体"
-                          ? "全体"
-                          : e.scope === "グループ"
-                            ? groupName(data, e.targetId)
-                            : memberName(data, e.targetId),
-                        e.place,
-                      ]
-                        .filter(Boolean)
-                        .join("・")}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        {/* 未対応の要請 */}
-        <Card>
-          <CardHeader title="未対応の支援要請" count={openRequests.length} />
-          {openRequests.length === 0 ? (
-            <Empty>未対応の要請はありません。</Empty>
-          ) : (
-            <ul className="divide-y divide-neutral-100 px-4 pb-2 sm:px-5">
-              {openRequests.map((r) => (
-                <li key={r.id} className="flex items-start gap-2.5 py-2.5">
-                  <Pill tone={statusTone(r.urgency)}>{r.urgency}</Pill>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[13.5px] font-medium text-neutral-800">{r.content}</p>
-                    <p className="text-[12px] text-neutral-400">
-                      {[shelterName(data, r.shelterId), r.qty, fmtDate(r.date)]
-                        .filter(Boolean)
-                        .join("・")}
-                    </p>
-                  </div>
-                  <Pill tone={statusTone(r.status)}>{r.status}</Pill>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-      </div>
-
-      {/* 最新の記録 */}
+      {/* 2. 次に為すべきこと */}
       <Card>
-        <CardHeader title="最新の記録" count={data.logs.length} />
-        {recentLogs.length === 0 ? (
-          <Empty>まだ記録がありません。「取り込み」からヒアリング内容などを登録できます。</Empty>
+        <CardHeader title="次に為すべきこと" count={actions.length} />
+        {actions.length === 0 ? (
+          <Empty>いま対応が必要な項目はありません。</Empty>
         ) : (
-          <ul className="divide-y divide-neutral-100 px-4 pb-2 sm:px-5">
-            {recentLogs.map((l) => {
-              const { date, time } = splitDateTime(l.datetime);
-              return (
-                <li key={l.id} className="py-2.5">
-                  <div className="flex items-center gap-2">
-                    <Pill tone="gray">{l.kind}</Pill>
-                    <span className="text-[12px] text-neutral-400">
-                      {fmtDate(date)}
-                      {time ? ` ${time}` : ""}
-                      {l.reporter ? `・${l.reporter}` : ""}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-[13.5px] font-medium text-neutral-800">{l.title}</p>
-                  {l.content && (
-                    <p className="mt-0.5 line-clamp-2 text-[13px] leading-relaxed text-neutral-500">
-                      {l.content}
-                    </p>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+          <ol className="divide-y divide-neutral-100 px-4 pb-2 sm:px-5">
+            {actions.map((a, i) => (
+              <li key={i} className="flex items-start gap-2.5 py-2.5">
+                <span className="mt-0.5 w-5 shrink-0 text-center text-[12px] font-bold text-neutral-300">
+                  {i + 1}
+                </span>
+                <Pill tone={a.tone}>{a.tag}</Pill>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13.5px] font-medium text-neutral-900">{a.text}</p>
+                  {a.sub && <p className="text-[12px] text-neutral-400">{a.sub}</p>}
+                </div>
+              </li>
+            ))}
+          </ol>
         )}
+      </Card>
+
+      {/* 3. タイムライン（上=これから / いま / 下=これまで） */}
+      <Card>
+        <CardHeader title="タイムライン" right={<span className="text-[12px] text-neutral-400">上: 予定 ／ 下: 実績</span>} />
+        <div className="px-4 pb-4 sm:px-5">
+          {future.length === 0 && past.length === 0 ? (
+            <Empty>まだ予定も実績もありません。「取り込み」から登録できます。</Empty>
+          ) : (
+            <>
+              {/* これから（近い順に上から。今に近いものが「いま」の直上に来るよう逆順表示） */}
+              <ol>
+                {[...future].reverse().map((item) => (
+                  <TimelineRow key={item.key} item={item} />
+                ))}
+              </ol>
+              {/* いま */}
+              <div className="my-1 flex items-center gap-3" aria-label="現在">
+                <span className="h-px flex-1 bg-rose-200" />
+                <span className="rounded-full bg-rose-50 px-3 py-1 text-[11.5px] font-bold text-rose-600 ring-1 ring-rose-200 ring-inset">
+                  いま（{fmtDate(today)}）
+                </span>
+                <span className="h-px flex-1 bg-rose-200" />
+              </div>
+              {/* これまで（新しい順） */}
+              <ol className="pt-3">
+                {past.map((item) => (
+                  <TimelineRow key={item.key} item={item} dim />
+                ))}
+              </ol>
+            </>
+          )}
+        </div>
       </Card>
     </div>
   );

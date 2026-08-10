@@ -15,13 +15,17 @@ import type { PillTone } from "@/components/relief/ui";
 
 const POLL_MS = 45_000;
 
-/** マウント後にのみ時刻を返す（SSRとのハイドレーション不一致を避ける）。 */
+/** マウント後にのみ時刻を返す（SSRとのハイドレーション不一致を避ける）。
+ *  effect 内の同期 setState を避けるため、初回はごく短いタイマーで設定する。 */
 function useClock(): Date | null {
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
-    setNow(new Date());
+    const first = setTimeout(() => setNow(new Date()), 0);
     const t = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(t);
+    return () => {
+      clearTimeout(first);
+      clearInterval(t);
+    };
   }, []);
   return now;
 }

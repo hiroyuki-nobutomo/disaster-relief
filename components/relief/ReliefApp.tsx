@@ -168,6 +168,14 @@ export default function ReliefApp({ initial }: { initial: ReliefData }) {
               </button>
             </div>
           )}
+          <a
+            href="/ops"
+            target="_blank"
+            rel="noreferrer"
+            className="block text-[11.5px] font-medium text-mute hover:text-accent"
+          >
+            🖥 オペレーションルーム表示 ↗
+          </a>
           <p className="text-[11px] leading-relaxed text-faint">
             {data.source === "seed"
               ? "サンプルデータ表示中（Sheets 未接続）"

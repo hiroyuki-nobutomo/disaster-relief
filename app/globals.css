@@ -75,3 +75,16 @@ body {
   outline: 2px solid color-mix(in srgb, var(--color-accent) 55%, transparent);
   outline-offset: 2px;
 }
+
+/* オペレーションルーム画面のティッカー（内容を2周並べて無限ループ） */
+.ops-ticker {
+  animation: ops-ticker 45s linear infinite;
+}
+@keyframes ops-ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}

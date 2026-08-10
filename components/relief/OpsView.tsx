@@ -9,7 +9,8 @@ import type { PillTone } from "@/components/relief/ui";
 // オペレーションルーム用の統合ボード（/ops）。
 // 4K・大型ディスプレイで全員が同時に見る前提の「操作しない」画面:
 //  - 45秒ごとに自動更新（LIVEインジケータ＋最終更新時刻を表示）
-//  - 要請ボード／物資パイプライン／避難所の収容状況／本日の動き／ライブタイムライン
+//  - 左=タイムライン（これからの予定＋「いま」＋これまでの実績を縦長1本で）
+//    中央=要請ボード／右=物資パイプライン＋避難所の収容状況
 //  - 下部に最新記録のティッカー
 // データは /api/relief/data（スマホUIと同一）。記録はサーバ側で公開範囲フィルタ済み。
 
@@ -172,7 +173,7 @@ function liveItems(data: ReliefData): Live[] {
     .sort((a, b) =>
       a.date === b.date ? (b.time ?? "").localeCompare(a.time ?? "") : b.date.localeCompare(a.date),
     )
-    .slice(0, 14);
+    .slice(0, 20);
 }
 
 export default function OpsView({ initial }: { initial: ReliefData }) {
@@ -218,11 +219,17 @@ export default function OpsView({ initial }: { initial: ReliefData }) {
   );
   const shelters = useMemo(() => data.shelters.filter((s) => s.status === "開設"), [data]);
   const evacuees = shelters.reduce((n, s) => n + (Number(s.current) || 0), 0);
-  const todaySched = useMemo(
+  // タイムライン上段の「これから」（本日以降の予定・近い順に最大7件）
+  const upcoming = useMemo(
     () =>
       data.schedule
-        .filter((e) => e.date === today)
-        .sort((a, b) => (a.start ?? "").localeCompare(b.start ?? "")),
+        .filter((e) => e.date >= today)
+        .sort((a, b) =>
+          a.date === b.date
+            ? (a.start ?? "").localeCompare(b.start ?? "")
+            : a.date.localeCompare(b.date),
+        )
+        .slice(0, 7),
     [data, today],
   );
   const live = useMemo(() => liveItems(data), [data]);
@@ -278,8 +285,64 @@ export default function OpsView({ initial }: { initial: ReliefData }) {
         </div>
       </header>
 
-      {/* 本体3カラム */}
-      <main className="grid min-h-0 flex-1 grid-cols-3 gap-4">
+      {/* 本体3カラム: 左=タイムライン（縦長）／中央=要請ボード／右=物資＋避難所 */}
+      <main className="grid min-h-0 flex-1 grid-cols-[1.15fr_1fr_1.1fr] gap-4">
+        {/* タイムライン（本日の動きを吸収: 上=これからの予定・「いま」・下=これまでの実績） */}
+        <Panel title="タイムライン" count={upcoming.length + live.length}>
+          <div className="flex h-full min-h-0 flex-col overflow-hidden">
+            {/* これから（近い順に「いま」の直上へ） */}
+            <div className="shrink-0">
+              {[...upcoming].reverse().map((e) => (
+                <div
+                  key={e.id}
+                  className="flex items-baseline gap-2.5 border-b border-line/70 py-1.5"
+                >
+                  <span className="w-[6.2rem] shrink-0 text-[13px] font-bold text-ink tabular-nums">
+                    {fmtDate(e.date)} {e.start ?? ""}
+                  </span>
+                  <p className="min-w-0 flex-1 truncate text-[14.5px] text-body">{e.title}</p>
+                  <Pill
+                    tone={e.scope === "全体" ? "blue" : e.scope === "グループ" ? "green" : "gray"}
+                  >
+                    {e.scope === "全体"
+                      ? "全体"
+                      : e.scope === "グループ"
+                        ? groupName(data, e.targetId)
+                        : memberName(data, e.targetId)}
+                  </Pill>
+                </div>
+              ))}
+            </div>
+            {/* いま */}
+            <div className="my-2 flex shrink-0 items-center gap-3" aria-label="現在">
+              <span className="h-px flex-1 bg-alert/30" />
+              <span className="rounded-full bg-alert-soft px-3 py-0.5 text-[12px] font-bold text-alert ring-1 ring-alert/30 ring-inset">
+                いま {clock.hms !== "--:--:--" ? clock.hms.slice(0, 5) : ""}
+              </span>
+              <span className="h-px flex-1 bg-alert/30" />
+            </div>
+            {/* これまで（新しい順・残り高さいっぱい） */}
+            <div className="min-h-0 flex-1 overflow-hidden">
+              {live.map((x) => (
+                <div
+                  key={x.key}
+                  className="flex items-baseline gap-2.5 border-b border-line/70 py-1.5 last:border-b-0"
+                >
+                  <span className="w-[6.2rem] shrink-0 text-[12.5px] text-mute tabular-nums">
+                    {fmtDate(x.date)}
+                    {x.time ? ` ${x.time}` : ""}
+                  </span>
+                  <Pill tone={x.tone}>{x.tag}</Pill>
+                  <p className="min-w-0 flex-1 truncate text-[14px] text-body">
+                    {x.title}
+                    {x.sub && <span className="ml-1.5 text-[12px] text-faint">{x.sub}</span>}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Panel>
+
         {/* 要請ボード */}
         <Panel title="要請ボード" count={openReq.length + workingReq.length}>
           <div className="grid h-full min-h-0 grid-rows-[auto_1fr_auto_1fr] gap-2">
@@ -362,57 +425,6 @@ export default function OpsView({ initial }: { initial: ReliefData }) {
           </Panel>
         </div>
 
-        {/* 本日の動き＋ライブタイムライン */}
-        <div className="grid min-h-0 grid-rows-2 gap-4">
-          <Panel title={`本日の動き ${fmtDate(today)}`} count={todaySched.length}>
-            <div className="h-full min-h-0 overflow-hidden">
-              {todaySched.length === 0 ? (
-                <p className="py-4 text-center text-[13px] text-faint">本日の予定はありません</p>
-              ) : (
-                todaySched.slice(0, 9).map((e) => (
-                  <div
-                    key={e.id}
-                    className="flex items-baseline gap-3 border-b border-line/70 py-1.5 last:border-b-0"
-                  >
-                    <span className="w-24 shrink-0 text-[14px] font-bold text-ink tabular-nums">
-                      {e.start ? `${e.start}${e.end ? `–${e.end}` : ""}` : "終日"}
-                    </span>
-                    <p className="min-w-0 flex-1 truncate text-[14.5px] text-body">{e.title}</p>
-                    <Pill
-                      tone={e.scope === "全体" ? "blue" : e.scope === "グループ" ? "green" : "gray"}
-                    >
-                      {e.scope === "全体"
-                        ? "全体"
-                        : e.scope === "グループ"
-                          ? groupName(data, e.targetId)
-                          : memberName(data, e.targetId)}
-                    </Pill>
-                  </div>
-                ))
-              )}
-            </div>
-          </Panel>
-          <Panel title="ライブタイムライン" count={live.length}>
-            <div className="h-full min-h-0 overflow-hidden">
-              {live.slice(0, 9).map((x) => (
-                <div
-                  key={x.key}
-                  className="flex items-baseline gap-2.5 border-b border-line/70 py-1.5 last:border-b-0"
-                >
-                  <span className="w-[4.6rem] shrink-0 text-[12.5px] text-mute tabular-nums">
-                    {fmtDate(x.date)}
-                    {x.time ? ` ${x.time}` : ""}
-                  </span>
-                  <Pill tone={x.tone}>{x.tag}</Pill>
-                  <p className="min-w-0 flex-1 truncate text-[14px] text-body">
-                    {x.title}
-                    {x.sub && <span className="ml-1.5 text-[12px] text-faint">{x.sub}</span>}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </Panel>
-        </div>
       </main>
 
       {/* ティッカー: 最新の記録が流れる */}
